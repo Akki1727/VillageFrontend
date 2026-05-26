@@ -1,0 +1,25 @@
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-section">
+      <h3>VillagePortal</h3>
+      <p>{{ t('footer_desc') }}</p>
+    </div>
+    <div class="footer-section">
+      <h3>{{ t('footer_quick') }}</h3>
+      <ul>
+        <li><a routerLink="/">{{ t('nav_home') }}</a></li>
+        <li><a routerLink="/about">{{ t('nav_about') }}</a></li>
+        <li><a routerLink="/events">{{ t('nav_events') }}</a></li>
+        <li><a routerLink="/politics">{{ t('nav_politics') }}</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>{{ t('footer_contact') }}</h3>
+      <p>Email: contact&#64;villageportal.com</p>
+      <p>Phone: +1 234 567 890</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; {{ currentYear }} VillagePortal. {{ t('footer_rights') }}</p>
+  </div>
+</footer>

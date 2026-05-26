@@ -1,0 +1,35 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+      <a routerLink="/">Village<span>Portal</span></a>
+    </div>
+
+    <!-- Right-side controls (Language & Menu) -->
+    <div class="nav-right">
+      <!-- Language Switcher Selector -->
+      <div class="lang-selector">
+        <select [ngModel]="currentLang" (ngModelChange)="changeLanguage($event)">
+          <option value="en">English</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="hi">हिन्दी</option>
+        </select>
+      </div>
+
+      <button class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <!-- Navigation Links -->
+    <ul class="nav-links" [class.open]="isMenuOpen">
+      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="toggleMenu()">{{ t('nav_home') }}</a></li>
+      <li><a routerLink="/about" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_about') }}</a></li>
+      <li><a routerLink="/events" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_events') }}</a></li>
+      <li><a routerLink="/politics" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_politics') }}</a></li>
+      <li><a routerLink="/admin" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_admin') }}</a></li>
+      <li *ngIf="isLoggedIn"><a class="nav-logout-btn" (click)="logout()">🚪 {{ t('logout') }}</a></li>
+    </ul>
+  </div>
+</nav>

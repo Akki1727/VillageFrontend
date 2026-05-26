@@ -1,0 +1,202 @@
+<!-- Guest view: Elegant glassmorphic login screen -->
+<div *ngIf="!isLoggedIn" class="login-wrapper">
+  <div class="login-card glass">
+    <div class="login-header">
+      <div class="lock-icon">🔒</div>
+      <h2>Admin Portal</h2>
+      <p>Sign in with your database seeded credentials.</p>
+    </div>
+    
+    <form (ngSubmit)="login()" class="login-form">
+      <div class="form-row">
+        <label for="username">Email Address</label>
+        <input type="email" id="username" name="username" [(ngModel)]="loginUsername" placeholder="admin@gmail.com" required autocomplete="email" />
+      </div>
+      
+      <div class="form-row">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" [(ngModel)]="loginPassword" placeholder="Admin@12" required autocomplete="current-password" />
+      </div>
+
+      <div class="error-msg animate-shake" *ngIf="loginError">
+        ⚠️ {{ loginError }}
+      </div>
+
+      <button type="submit" class="btn btn-primary login-btn">Sign In</button>
+    </form>
+  </div>
+</div>
+
+<!-- Authenticated view: Premium SaaS Admin Sidebar Layout -->
+<div *ngIf="isLoggedIn" class="admin-layout">
+  
+  <!-- Modern Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🏛️</span>
+      <div class="brand-meta">
+        <h3>Village Portal</h3>
+        <p>Control Console</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active">
+        <span class="nav-icon">📅</span>
+        <span class="nav-text">Events Manager</span>
+      </a>
+      <a class="nav-item disabled">
+        <span class="nav-icon">👥</span>
+        <span class="nav-text">Panchayat Staff</span>
+      </a>
+      <a class="nav-item disabled">
+        <span class="nav-icon">📜</span>
+        <span class="nav-text">Resolutions</span>
+      </a>
+      <a class="nav-item disabled">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-text">Portal Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-badge">
+        <div class="badge-avatar">A</div>
+        <div class="badge-info">
+          <h4>Admin Account</h4>
+          <p>admin&#64;gmail.com</p>
+        </div>
+      </div>
+      <button class="btn btn-logout-sidebar" (click)="logout()">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Content Area -->
+  <main class="admin-main">
+    
+    <!-- Top Bar Header -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <div class="breadcrumbs">System / Events Dashboard</div>
+        <h2>Events & Programs</h2>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" (click)="openAddForm()">+ Add New Event</button>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <div class="admin-container">
+      
+      <!-- Table Card -->
+      <div class="dashboard-card glass">
+        <div class="card-header">
+          <h3>Registered Programs</h3>
+          <span class="badge-count">{{ events.length }} events listed</span>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Program Title</th>
+                <th>Location</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th class="actions-header">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let event of events">
+                <td class="date-cell">
+                  <div class="cell-date-box">
+                    <strong>{{ event.event_date }}</strong>
+                    <span>🕒 {{ event.event_time }}</span>
+                  </div>
+                </td>
+                <td class="title-cell">
+                  <strong>{{ event.title_en }}</strong>
+                </td>
+                <td>
+                  <span class="loc-pin">📍</span> {{ event.location_en }}
+                </td>
+                <td class="desc-cell">
+                  <p>{{ event.description_en }}</p>
+                </td>
+                <td class="status-cell">
+                  <button type="button" class="status-toggle-btn" [class.active]="event.status !== 'inactive'" (click)="toggleStatus(event)" title="Toggle Event Status">
+                    <span class="toggle-slider"></span>
+                    <span class="status-text">{{ event.status !== 'inactive' ? 'Active' : 'Inactive' }}</span>
+                  </button>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <button class="btn-action edit" (click)="openEditForm(event)" title="Edit Program">📝 Edit</button>
+                    <button class="btn-action delete" (click)="deleteEvent(event.id)" title="Delete Program">🗑️ Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="events.length === 0">
+                <td colspan="5" class="empty-state">
+                  <div class="empty-icon">📅</div>
+                  <h3>No events registered</h3>
+                  <p>Click "+ Add New Event" to establish your first village program!</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Slide-out Side Drawer Form Panel -->
+  <div class="drawer-backdrop" *ngIf="isFormOpen" (click)="closeForm()"></div>
+  <div class="drawer-panel" [class.open]="isFormOpen">
+    <div class="drawer-header">
+      <h2>{{ isEditing ? 'Edit Program Details' : 'Create Village Program' }}</h2>
+      <button class="close-btn" (click)="closeForm()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="saveEvent()" #eventForm="ngForm" class="drawer-form">
+      <div class="drawer-body">
+        
+        <div class="form-row">
+          <label for="title_en">Program Title *</label>
+          <input type="text" id="title_en" name="title_en" [(ngModel)]="formModel.title_en" placeholder="e.g. Independence Day Mela" required />
+        </div>
+
+        <div class="form-row">
+          <label for="location_en">Program Location *</label>
+          <input type="text" id="location_en" name="location_en" [(ngModel)]="formModel.location_en" placeholder="e.g. Panchayat Square" required />
+        </div>
+
+        <div class="form-row">
+          <label for="description_en">Program Description *</label>
+          <textarea id="description_en" name="description_en" [(ngModel)]="formModel.description_en" placeholder="Provide full details of the program..." required rows="5"></textarea>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label for="event_date">Event Date *</label>
+            <input type="date" id="event_date" name="event_date" [(ngModel)]="formModel.event_date" required />
+          </div>
+          <div class="form-row">
+            <label for="event_time">Event Time *</label>
+            <input type="text" id="event_time" name="event_time" placeholder="e.g. 08:00 AM" [(ngModel)]="formModel.event_time" required />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!eventForm.form.valid">Save Program</button>
+      </div>
+    </form>
+  </div>
+
+</div>

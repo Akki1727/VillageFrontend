@@ -1,0 +1,35 @@
+<div class="page-header">
+  <div class="header-content">
+    <h1>{{ t('events_header_title') }}</h1>
+    <p>{{ t('events_header_subtitle') }}</p>
+  </div>
+</div>
+
+<div class="container content-section">
+  <div class="events-list">
+    <!-- Dynamic Events -->
+    <div class="event-card glass" *ngFor="let event of events">
+      <div class="event-date">
+        <span class="day">{{ event.event_date ? (event.event_date | date:'dd') : '--' }}</span>
+        <span class="month">{{ event.event_date ? (event.event_date | date:'MMM' | uppercase) : 'EVENT' }}</span>
+      </div>
+      <div class="event-details">
+        <h3>
+          {{ currentLang === 'gu' ? event.title_gu : currentLang === 'hi' ? event.title_hi : event.title_en }}
+        </h3>
+        <p class="event-time">
+          📍 {{ currentLang === 'gu' ? event.location_gu : currentLang === 'hi' ? event.location_hi : event.location_en }} | 🕒 {{ event.event_time }}
+        </p>
+        <p>
+          {{ currentLang === 'gu' ? event.description_gu : currentLang === 'hi' ? event.description_hi : event.description_en }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="no-events-client glass" *ngIf="events.length === 0">
+      <div class="empty-icon">📅</div>
+      <h3>{{ t('no_events') }}</h3>
+    </div>
+  </div>
+</div>

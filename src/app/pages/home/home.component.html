@@ -1,0 +1,42 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>{{ t('hero_title') }}</h1>
+      <p>{{ t('hero_subtitle') }}</p>
+      <div class="hero-buttons">
+        <a routerLink="/about" class="btn btn-primary">{{ t('hero_btn_more') }}</a>
+        <a routerLink="/events" class="btn btn-secondary">{{ t('hero_btn_events') }}</a>
+      </div>
+    </div>
+    <div class="hero-overlay"></div>
+  </section>
+
+  <!-- Highlights Section -->
+  <section class="highlights container">
+    <div class="section-title">
+      <h2>{{ t('highlights_title') }}</h2>
+      <div class="underline"></div>
+    </div>
+    <div class="grid">
+      <div class="card glass">
+        <div class="card-icon">🏛️</div>
+        <h3>{{ t('gov_title') }}</h3>
+        <p>{{ t('gov_desc') }}</p>
+        <a routerLink="/politics" class="read-more">{{ t('read_more') }}</a>
+      </div>
+      <div class="card glass">
+        <div class="card-icon">📅</div>
+        <h3>{{ t('comm_events_title') }}</h3>
+        <p>{{ t('comm_events_desc') }}</p>
+        <a routerLink="/events" class="read-more">{{ t('view_sched') }}</a>
+      </div>
+      <div class="card glass">
+        <div class="card-icon">🌿</div>
+        <h3>{{ t('heritage_title') }}</h3>
+        <p>{{ t('heritage_desc') }}</p>
+        <a routerLink="/about" class="read-more">{{ t('explore_hist') }}</a>
+      </div>
+    </div>
+  </section>
+</div>

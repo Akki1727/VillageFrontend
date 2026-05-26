@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Brand Colors */
+  --primary-color: #2F855A; /* Deep Green */
+  --secondary-color: #DD6B20; /* Saffron/Orange */
+  --accent-color: #3182CE; /* Blue */
+  
+  /* Backgrounds */
+  --bg-main: #F7FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-dark: #1A202C;
+  
+  /* Text */
+  --text-main: #2D3748;
+  --text-muted: #718096;
+  --text-light: #F7FAFC;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Border Radius */
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 1rem;
+  
+  /* Layout */
+  --nav-height: 70px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Common Page Header */
+.page-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 80px 20px 60px;
+  text-align: center;
+}
+
+.header-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.header-content p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.content-section {
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.underline-left {
+  width: 60px;
+  height: 4px;
+  background-color: var(--secondary-color);
+  margin-bottom: 20px;
+  border-radius: 2px;
+}
+
