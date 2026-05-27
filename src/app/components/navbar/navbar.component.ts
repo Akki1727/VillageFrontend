@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { LanguageService, LanguageType } from '../../services/language.service';
+import { LanguageService } from '../../services/language.service';
 import { EventService } from '../../services/event.service';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -32,13 +31,6 @@ export class NavbarComponent implements OnInit {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
-  get currentLang(): LanguageType {
-    return this.langService.getLanguage();
-  }
-
-  changeLanguage(lang: LanguageType) {
-    this.langService.setLanguage(lang);
-  }
 
   logout() {
     this.eventService.setLoginState(false);

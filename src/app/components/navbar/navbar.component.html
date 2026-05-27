@@ -6,15 +6,6 @@
 
     <!-- Right-side controls (Language & Menu) -->
     <div class="nav-right">
-      <!-- Language Switcher Selector -->
-      <div class="lang-selector">
-        <select [ngModel]="currentLang" (ngModelChange)="changeLanguage($event)">
-          <option value="en">English</option>
-          <option value="gu">ગુજરાતી</option>
-          <option value="hi">हिन्दी</option>
-        </select>
-      </div>
-
       <button class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
         <span></span>
         <span></span>
