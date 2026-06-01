@@ -31,6 +31,7 @@ export class AdminComponent implements OnInit {
   isFormOpen = false;
   isEditing = false;
   editingId?: number;
+  isSavingEvent = false;
 
   formModel: EventModel = this.getEmptyFormModel();
 
@@ -230,24 +231,66 @@ export class AdminComponent implements OnInit {
     };
   }
 
+  convertTo24Hour(timeStr: string): string {
+    if (!timeStr) return '08:00';
+    if (!timeStr.includes('AM') && !timeStr.includes('PM')) {
+      return timeStr.trim();
+    }
+    const parts = timeStr.split(' ');
+    const time = parts[0];
+    const modifier = parts[1];
+    let [hoursStr, minutesStr] = time.split(':');
+    let hours = parseInt(hoursStr, 10);
+    if (hours === 12) {
+      hours = 0;
+    }
+    if (modifier === 'PM') {
+      hours = hours + 12;
+    }
+    return `${String(hours).padStart(2, '0')}:${minutesStr.padStart(2, '0')}`;
+  }
+
+  convertTo12Hour(time24: string): string {
+    if (!time24) return '08:00 AM';
+    if (time24.includes('AM') || time24.includes('PM')) {
+      return time24;
+    }
+    let [hoursStr, minutesStr] = time24.split(':');
+    let hours = parseInt(hoursStr, 10);
+    const modifier = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return `${String(hours).padStart(2, '0')}:${minutesStr} ${modifier}`;
+  }
+
   openAddForm() {
     this.formModel = this.getEmptyFormModel();
+    this.formModel.event_time = '08:00'; // Standard 24h default for picker
     this.isEditing = false;
     this.isFormOpen = true;
+    this.isSavingEvent = false;
   }
 
   openEditForm(event: EventModel) {
     this.formModel = { ...event };
+    this.formModel.event_time = this.convertTo24Hour(event.event_time);
     this.editingId = event.id;
     this.isEditing = true;
     this.isFormOpen = true;
+    this.isSavingEvent = false;
   }
 
   closeForm() {
     this.isFormOpen = false;
+    this.isSavingEvent = false;
   }
 
   saveEvent() {
+    this.isSavingEvent = true;
+    
+    // Revert 24h picker back to 12h format for consistent storage
+    this.formModel.event_time = this.convertTo12Hour(this.formModel.event_time);
+
     // Automatically copy English content to Gujarati and Hindi to keep events dynamic
     this.formModel.title_gu = this.formModel.title_en;
     this.formModel.title_hi = this.formModel.title_en;
@@ -257,14 +300,28 @@ export class AdminComponent implements OnInit {
     this.formModel.location_hi = this.formModel.location_en;
 
     if (this.isEditing && this.editingId !== undefined) {
-      this.eventService.updateEvent(this.formModel).subscribe(() => {
-        this.loadEvents();
-        this.closeForm();
+      this.eventService.updateEvent(this.formModel).subscribe({
+        next: () => {
+          this.loadEvents();
+          this.isSavingEvent = false;
+          this.closeForm();
+        },
+        error: (err) => {
+          console.error(err);
+          this.isSavingEvent = false;
+        }
       });
     } else {
-      this.eventService.createEvent(this.formModel).subscribe(() => {
-        this.loadEvents();
-        this.closeForm();
+      this.eventService.createEvent(this.formModel).subscribe({
+        next: () => {
+          this.loadEvents();
+          this.isSavingEvent = false;
+          this.closeForm();
+        },
+        error: (err) => {
+          console.error(err);
+          this.isSavingEvent = false;
+        }
       });
     }
   }

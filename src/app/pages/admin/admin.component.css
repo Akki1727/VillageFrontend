@@ -1164,3 +1164,53 @@
   transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(47, 133, 90, 0.2);
 }
+
+/* ⏳ Saving Loader Spinner & Mobile Drawer Overrides */
+.saving-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(47, 133, 90, 0.05);
+  border: 1px solid rgba(47, 133, 90, 0.12);
+  padding: 10px 20px;
+  border-radius: 30px;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 0.95rem;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.spinner-dot {
+  display: inline-block;
+  animation: spin 1.5s infinite linear;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.6; }
+}
+
+/* Additional Mobile drawer form tweaks */
+@media screen and (max-width: 480px) {
+  .drawer-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+  }
+  
+  .drawer-footer .btn {
+    width: 100%;
+  }
+  
+  .saving-indicator {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
