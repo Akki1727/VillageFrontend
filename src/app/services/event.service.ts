@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface EventModel {
   id?: number;
@@ -21,11 +22,16 @@ export interface EventModel {
   updated_at?: string;
 }
 
+export interface CarouselSettings {
+  images: string[];
+  interval: number; // in seconds
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class EventService {
-  private apiUrl = 'http://localhost/backend/public/api/events';
+  private apiUrl = environment.apiUrl + '/events';
   
   private isLoggedInSubject = new BehaviorSubject<boolean>(localStorage.getItem('admin_session') === 'active');
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
@@ -59,7 +65,7 @@ export class EventService {
       id: 2,
       title_en: 'Gandhi Jayanti Cleanliness Drive',
       title_gu: 'ગાંધી જયંતી સ્વચ્છતા અભિયાન',
-      title_hi: 'ગાંધી જયંતી સ્વચ્છતા અભિયાન', // Wait, let's fix this in hindi: 'गांधी जयंती स्वच्छता अभियान'
+      title_hi: 'गांधी जयंती स्वच्छता अभियान',
       description_en: 'Community gathering for cleaning primary school premises and planting saplings.',
       description_gu: 'પ્રાથમિક શાળાના પરિસરની સફાઈ અને રોપા વાવવા માટે સામુદાયિક મેળાવડો.',
       description_hi: 'प्राथमिक विद्यालय परिसर की सफाई और पौधे लगाने के लिए सामुदायिक बैठक।',
@@ -68,11 +74,40 @@ export class EventService {
       location_hi: 'प्राथमिक विद्यालय मैदान',
       event_date: '2026-10-02',
       event_time: '07:30 AM'
+    },
+    {
+      id: 3,
+      title_en: 'Republic Day Celebration',
+      title_gu: 'પ્રજાસત્તાક દિનની ઉજવણી',
+      title_hi: 'गणतंत्र दिवस समारोह',
+      description_en: 'Flag hoisting ceremony followed by patriotic songs and a sports meet for youth.',
+      description_gu: 'ધ્વજવંદન સમારોહ અને ત્યારબાદ દેશભક્તિના ગીતો અને યુવાનો માટે રમતગમત મહોત્સવ.',
+      description_hi: 'ध्वजारोहण समारोह के बाद देशभक्ति गीत और युवाओं के लिए खेल प्रतियोगिता।',
+      location_en: 'Gram Panchayat Compound',
+      location_gu: 'ગ્રામ પંચાયત કમ્પાઉન્ડ',
+      location_hi: 'ग्राम पंचायत परिसर',
+      event_date: '2026-01-26',
+      event_time: '08:30 AM'
+    },
+    {
+      id: 4,
+      title_en: 'Annual Medical Camp',
+      title_gu: 'વાર્ષિક તબીબી કેમ્પ',
+      title_hi: 'वार्षिक चिकित्सा शिविर',
+      description_en: 'Free health checkup camp conducted by doctors from City General Hospital.',
+      description_gu: 'સિટી જનરલ હોસ્પિટલના ડોક્ટરો દ્વારા નિઃશુલ્ક હેલ્થ ચેકઅપ કેમ્પ.',
+      description_hi: 'सिटी जनरल अस्पताल के डॉक्टरों द्वारा आयोजित निःशुल्क स्वास्थ्य जांच शिविर।',
+      location_en: 'Community Hall',
+      location_gu: 'સામુદાયિક હોલ',
+      location_hi: 'सामुदायिक भवन',
+      event_date: '2026-03-10',
+      event_time: '09:00 AM'
     }
   ];
 
   constructor(private http: HttpClient) {
-    if (!localStorage.getItem('fallback_events')) {
+    const existing = localStorage.getItem('fallback_events');
+    if (!existing || JSON.parse(existing).length < this.fallbackEvents.length) {
       localStorage.setItem('fallback_events', JSON.stringify(this.fallbackEvents));
     }
   }
@@ -169,7 +204,7 @@ export class EventService {
   }
 
   login(credentials: any): Observable<any> {
-    const loginUrl = 'http://localhost/backend/public/api/login';
+    const loginUrl = environment.apiUrl + '/login';
     if (this.http && typeof this.http.post === 'function') {
       return this.http.post(loginUrl, credentials).pipe(
         catchError((err) => {
@@ -185,5 +220,80 @@ export class EventService {
       return of({ success: true, token: 'fallback_active_token', user: { name: 'Admin User', email: 'admin@gmail.com' } });
     }
     throw new Error('Invalid credentials');
+  }
+
+  private defaultCarouselSettings: CarouselSettings = {
+    images: [
+      'https://images.unsplash.com/photo-1546482502-056e4794664d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1508873696983-2df519f0397e?auto=format&fit=crop&w=800&q=80'
+    ],
+    interval: 3 // Default 3 seconds
+  };
+
+  getCarouselSettings(): Observable<CarouselSettings> {
+    const settingsUrl = environment.apiUrl + '/settings/carousel';
+    return this.http.get<CarouselSettings>(settingsUrl).pipe(
+      catchError(() => {
+        console.warn('Backend API offline. Using LocalStorage fallback for carousel settings.');
+        const data = localStorage.getItem('carousel_settings');
+        if (data) {
+          return of(JSON.parse(data));
+        }
+        localStorage.setItem('carousel_settings', JSON.stringify(this.defaultCarouselSettings));
+        return of(this.defaultCarouselSettings);
+      })
+    );
+  }
+
+  saveCarouselSettings(settings: CarouselSettings): Observable<CarouselSettings> {
+    const settingsUrl = environment.apiUrl + '/settings/carousel';
+    // Update browser LocalStorage immediately to keep fallback in sync
+    localStorage.setItem('carousel_settings', JSON.stringify(settings));
+    
+    return this.http.post<CarouselSettings>(settingsUrl, settings).pipe(
+      catchError(() => {
+        console.warn('Backend API offline. Saving settings to LocalStorage fallback only.');
+        return of(settings);
+      })
+    );
+  }
+
+  private confirmDialogSubject = new BehaviorSubject<{
+    title: string;
+    message: string;
+    confirmBtnText?: string;
+    cancelBtnText?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+  } | null>(null);
+  
+  confirmDialog$ = this.confirmDialogSubject.asObservable();
+
+  showConfirm(options: {
+    title: string;
+    message: string;
+    confirmBtnText?: string;
+    cancelBtnText?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+  }) {
+    this.confirmDialogSubject.next(options);
+  }
+
+  closeConfirm() {
+    const current = this.confirmDialogSubject.value;
+    if (current && current.onCancel) {
+      current.onCancel();
+    }
+    this.confirmDialogSubject.next(null);
+  }
+
+  triggerConfirm() {
+    const current = this.confirmDialogSubject.value;
+    if (current) {
+      current.onConfirm();
+    }
+    this.confirmDialogSubject.next(null);
   }
 }

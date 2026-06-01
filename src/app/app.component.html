@@ -4,4 +4,27 @@
     <router-outlet></router-outlet>
   </main>
   <app-footer></app-footer>
+
+  <!-- Common Shared Reusable Confirmation Dialog -->
+  <div class="modal-backdrop confirmation-backdrop" *ngIf="eventService.confirmDialog$ | async as dialog" (click)="eventService.closeConfirm()">
+    <div class="modal-card confirmation-card glass animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header confirmation-header">
+        <span class="modal-badge-title warning">⚠️ {{ dialog.title }}</span>
+        <button type="button" class="modal-close-btn" (click)="eventService.closeConfirm()">&times;</button>
+      </div>
+      <div class="modal-body confirmation-body" style="padding: 25px 30px;">
+        <p class="confirm-message" style="font-size: 1.05rem; line-height: 1.6; color: var(--text-main); font-weight: 500;">
+          {{ dialog.message }}
+        </p>
+      </div>
+      <div class="modal-footer confirmation-footer" style="gap: 12px; display: flex; justify-content: flex-end; padding: 20px 30px 25px;">
+        <button type="button" class="btn btn-secondary btn-close-modal" *ngIf="dialog.cancelBtnText !== 'none'" (click)="eventService.closeConfirm()" style="background: none; border: 1px solid rgba(0,0,0,0.15); color: var(--text-main); font-family: inherit; font-size: 0.95rem; border-radius: 30px; padding: 10px 24px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+          {{ dialog.cancelBtnText || 'Cancel' }}
+        </button>
+        <button type="button" class="btn btn-primary btn-confirm" (click)="eventService.triggerConfirm()" style="background: var(--secondary-color); border: none; color: white; font-family: inherit; font-size: 0.95rem; border-radius: 30px; padding: 10px 24px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+          {{ dialog.confirmBtnText || 'Confirm' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

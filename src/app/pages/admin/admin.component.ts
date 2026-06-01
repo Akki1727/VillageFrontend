@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EventService, EventModel } from '../../services/event.service';
+import { EventService, EventModel, CarouselSettings } from '../../services/event.service';
 import { LanguageService } from '../../services/language.service';
 
 @Component({
@@ -13,6 +13,13 @@ import { LanguageService } from '../../services/language.service';
 })
 export class AdminComponent implements OnInit {
   events: EventModel[] = [];
+  activeTab: 'events' | 'settings' = 'events';
+  carouselSettings: CarouselSettings = { images: [], interval: 3 };
+  newImageUrl: string = '';
+  settingsSuccessMessage: string = '';
+  settingsErrorMessage: string = '';
+  selectedFileName: string = '';
+  uploadProgresses: { name: string; progress: number }[] = [];
   
   // Auth State
   isLoggedIn = false;
@@ -37,6 +44,145 @@ export class AdminComponent implements OnInit {
       this.isLoggedIn = state;
       if (state) {
         this.loadEvents();
+        this.loadCarouselSettings();
+      }
+    });
+  }
+
+  loadCarouselSettings() {
+    this.eventService.getCarouselSettings().subscribe(settings => {
+      this.carouselSettings = { ...settings };
+    });
+  }
+
+  addCarouselImage() {
+    if (!this.newImageUrl) return;
+    if (!this.newImageUrl.startsWith('http://') && !this.newImageUrl.startsWith('https://')) {
+      this.eventService.showConfirm({
+        title: 'Invalid URL',
+        message: 'Please enter a valid image URL starting with http:// or https://',
+        confirmBtnText: 'OK',
+        cancelBtnText: 'none',
+        onConfirm: () => {}
+      });
+      return;
+    }
+    if (!this.carouselSettings.images) {
+      this.carouselSettings.images = [];
+    }
+    this.carouselSettings.images.push(this.newImageUrl);
+    this.newImageUrl = '';
+  }
+
+  onFileSelected(event: any) {
+    const files: FileList = event.target.files;
+    if (files && files.length > 0) {
+      this.selectedFileName = files.length === 1 ? files[0].name : `${files.length} files selected`;
+      
+      // Initialize progresses list
+      this.uploadProgresses = [];
+      let loadedCount = 0;
+      
+      if (!this.carouselSettings.images) {
+        this.carouselSettings.images = [];
+      }
+
+      // First pass: Validate files and add them to active progresses list
+      const validFiles: File[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) {
+          this.eventService.showConfirm({
+            title: 'Unsupported File Type',
+            message: `The file "${file.name}" is not a supported image. Only image files are permitted.`,
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
+          continue;
+        }
+        validFiles.push(file);
+        this.uploadProgresses.push({ name: file.name, progress: 0 });
+      }
+
+      if (validFiles.length === 0) {
+        this.selectedFileName = '';
+        return;
+      }
+
+      this.selectedFileName = validFiles.length === 1 ? validFiles[0].name : `${validFiles.length} files loading`;
+
+      // Second pass: Read files in parallel and track progress
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        const reader = new FileReader();
+        
+        reader.onprogress = (e: ProgressEvent<FileReader>) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            const idx = this.uploadProgresses.findIndex(p => p.name === file.name);
+            if (idx !== -1) {
+              this.uploadProgresses[idx].progress = pct;
+            }
+          }
+        };
+
+        reader.onload = (e: any) => {
+          const base64Str = e.target.result;
+          this.carouselSettings.images.push(base64Str);
+          
+          // Complete progress
+          const idx = this.uploadProgresses.findIndex(p => p.name === file.name);
+          if (idx !== -1) {
+            this.uploadProgresses[idx].progress = 100;
+          }
+
+          loadedCount++;
+          
+          // Reset when all files are complete
+          if (loadedCount === validFiles.length) {
+            this.selectedFileName = '';
+            setTimeout(() => {
+              this.uploadProgresses = [];
+            }, 1500); // Wait 1.5s so the user sees the completed state
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  }
+
+  deleteCarouselImage(index: number) {
+    this.eventService.showConfirm({
+      title: 'Remove Image',
+      message: 'Are you sure you want to remove this image from the carousel?',
+      confirmBtnText: 'Remove',
+      onConfirm: () => {
+        this.carouselSettings.images.splice(index, 1);
+      }
+    });
+  }
+
+  saveCarouselSettings() {
+    if (this.carouselSettings.interval < 1) {
+      this.eventService.showConfirm({
+        title: 'Invalid Interval',
+        message: 'Interval must be at least 1 second.',
+        confirmBtnText: 'OK',
+        cancelBtnText: 'none',
+        onConfirm: () => {}
+      });
+      return;
+    }
+    this.eventService.saveCarouselSettings(this.carouselSettings).subscribe({
+      next: () => {
+        this.settingsSuccessMessage = 'Carousel settings saved successfully!';
+        setTimeout(() => this.settingsSuccessMessage = '', 3000);
+      },
+      error: (err) => {
+        console.error(err);
+        this.settingsErrorMessage = 'Failed to save settings!';
+        setTimeout(() => this.settingsErrorMessage = '', 3000);
       }
     });
   }
@@ -125,11 +271,16 @@ export class AdminComponent implements OnInit {
 
   deleteEvent(id: number | undefined) {
     if (!id) return;
-    if (confirm(this.t('confirm_delete') || 'Are you sure you want to delete this event?')) {
-      this.eventService.deleteEvent(id).subscribe(() => {
-        this.loadEvents();
-      });
-    }
+    this.eventService.showConfirm({
+      title: 'Delete Event',
+      message: this.t('confirm_delete') || 'Are you sure you want to delete this event?',
+      confirmBtnText: 'Delete',
+      onConfirm: () => {
+        this.eventService.deleteEvent(id).subscribe(() => {
+          this.loadEvents();
+        });
+      }
+    });
   }
 
   toggleStatus(event: EventModel) {

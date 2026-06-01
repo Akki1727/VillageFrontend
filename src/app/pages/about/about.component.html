@@ -13,10 +13,34 @@
       <p>{{ t('hist_p1') }}</p>
       <p>{{ t('hist_p2') }}</p>
     </div>
-    <div class="about-image">
-      <div class="image-placeholder">
-        <span>{{ t('img_placeholder') }}</span>
+    <div class="about-image" (mouseenter)="stopAutoScroll()" (mouseleave)="startAutoScroll()">
+      <div class="carousel-container" *ngIf="carouselSettings.images && carouselSettings.images.length > 0; else noImages">
+        <div class="carousel-track" [style.transform]="'translateX(-' + currentIndex * 100 + '%)'">
+          <div class="carousel-slide" *ngFor="let img of carouselSettings.images">
+            <img [src]="img" alt="Village History Highlight" class="carousel-img" (click)="openImageModal(img)" style="cursor: pointer;" />
+          </div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <button type="button" class="carousel-btn prev" (click)="prevSlide()" *ngIf="carouselSettings.images.length > 1">&lt;</button>
+        <button type="button" class="carousel-btn next" (click)="nextSlide()" *ngIf="carouselSettings.images.length > 1">&gt;</button>
+        
+        <!-- Indicator Dots -->
+        <div class="carousel-dots" *ngIf="carouselSettings.images.length > 1">
+          <span 
+            *ngFor="let dot of carouselSettings.images; let idx = index" 
+            class="dot" 
+            [class.active]="currentIndex === idx"
+            (click)="goToSlide(idx)">
+          </span>
+        </div>
       </div>
+      
+      <ng-template #noImages>
+        <div class="image-placeholder">
+          <span>{{ t('img_placeholder') }}</span>
+        </div>
+      </ng-template>
     </div>
   </div>
   
@@ -36,6 +60,19 @@
     <div class="stat-box">
       <h4>{{ t('stat_hospitals') }}</h4>
       <span class="stat-number">2</span>
+    </div>
+  </div>
+
+  <!-- Image Lightbox Modal Dialog -->
+  <div class="modal-backdrop" *ngIf="selectedImage" (click)="closeImageModal()">
+    <div class="modal-card image-modal-card glass animate-scale-up" (click)="$event.stopPropagation()">
+      <div class="modal-header image-modal-header" style="padding: 20px 25px 10px; border-bottom: none;">
+        <span class="modal-badge-title">Photograph Details</span>
+        <button type="button" class="modal-close-btn" (click)="closeImageModal()">&times;</button>
+      </div>
+      <div class="modal-body image-modal-body">
+        <img [src]="selectedImage" alt="Village Landscape Detail View" class="lightbox-img" />
+      </div>
     </div>
   </div>
 </div>

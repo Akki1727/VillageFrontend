@@ -35,13 +35,13 @@
     <div class="sidebar-brand">
       <span class="brand-icon">🏛️</span>
       <div class="brand-meta">
-        <h3>Village Portal</h3>
+        <h3>Dhamatvan Portal</h3>
         <p>Control Console</p>
       </div>
     </div>
 
     <nav class="sidebar-nav">
-      <a class="nav-item active">
+      <a class="nav-item" [class.active]="activeTab === 'events'" (click)="activeTab = 'events'" style="cursor: pointer;">
         <span class="nav-icon">📅</span>
         <span class="nav-text">Events Manager</span>
       </a>
@@ -53,7 +53,7 @@
         <span class="nav-icon">📜</span>
         <span class="nav-text">Resolutions</span>
       </a>
-      <a class="nav-item disabled">
+      <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'" style="cursor: pointer;">
         <span class="nav-icon">⚙️</span>
         <span class="nav-text">Portal Settings</span>
       </a>
@@ -79,10 +79,10 @@
     <!-- Top Bar Header -->
     <header class="admin-topbar">
       <div class="topbar-left">
-        <div class="breadcrumbs">System / Events Dashboard</div>
-        <h2>Events & Programs</h2>
+        <div class="breadcrumbs">System / {{ activeTab === 'events' ? 'Events Dashboard' : 'Portal Settings' }}</div>
+        <h2>{{ activeTab === 'events' ? 'Events & Programs' : 'About Carousel Settings' }}</h2>
       </div>
-      <div class="topbar-right">
+      <div class="topbar-right" *ngIf="activeTab === 'events'">
         <button class="btn btn-primary" (click)="openAddForm()">+ Add New Event</button>
       </div>
     </header>
@@ -90,8 +90,8 @@
     <!-- Main Content Container -->
     <div class="admin-container">
       
-      <!-- Table Card -->
-      <div class="dashboard-card glass">
+      <!-- Events Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'events'">
         <div class="card-header">
           <h3>Registered Programs</h3>
           <span class="badge-count">{{ events.length }} events listed</span>
@@ -149,6 +149,96 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- Carousel Settings Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'settings'">
+        <div class="card-header">
+          <h3>History Section Carousel Manager</h3>
+          <span class="badge-count">{{ carouselSettings.images ? carouselSettings.images.length : 0 }} slides active</span>
+        </div>
+        
+        <!-- Feedback messages -->
+        <div class="settings-alert success animate-fade-in" *ngIf="settingsSuccessMessage">
+          ✅ {{ settingsSuccessMessage }}
+        </div>
+        <div class="settings-alert error animate-fade-in" *ngIf="settingsErrorMessage">
+          ⚠️ {{ settingsErrorMessage }}
+        </div>
+
+        <form (ngSubmit)="saveCarouselSettings()" #settingsForm="ngForm" class="settings-dashboard-form">
+          <div class="settings-section">
+            <div class="form-row-settings">
+              <label for="interval">Auto-Scroll Duration (Seconds)</label>
+              <input type="number" id="interval" name="interval" [(ngModel)]="carouselSettings.interval" required min="1" max="60" class="input-number" />
+              <small class="help-text">Set how many seconds each slide should remain active before auto-scrolling.</small>
+            </div>
+            
+            <div class="form-row-settings" style="margin-top: 25px;">
+              <label>Manage Active Slides & Photographs</label>
+              <div class="image-gallery-grid">
+                <div class="gallery-card glass" *ngFor="let img of carouselSettings.images; let idx = index">
+                  <div class="gallery-thumb-box">
+                    <img [src]="img" alt="Slide Preview" class="gallery-thumb" />
+                    <span class="slide-badge">Slide {{ idx + 1 }}</span>
+                  </div>
+                  <div class="gallery-details">
+                    <input type="text" [value]="img" readonly class="gallery-url-field" title="Image URL" />
+                    <button type="button" class="btn-delete-thumb" (click)="deleteCarouselImage(idx)">🗑️ Remove</button>
+                  </div>
+                </div>
+                
+                <div class="gallery-card empty-gallery-state" *ngIf="!carouselSettings.images || carouselSettings.images.length === 0">
+                  <span style="font-size: 2rem; margin-bottom: 10px;">📸</span>
+                  <p style="margin:0; font-size: 0.9rem; color: var(--text-muted);">No images added yet.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-settings add-image-block" style="margin-top: 30px;">
+              <label>Add Slide Photograph</label>
+              <div class="upload-methods-grid">
+                <!-- Method A: Paste URL -->
+                <div class="upload-method-box glass">
+                  <strong>🔗 Option A: Paste Image URL</strong>
+                  <div class="input-action-group" style="margin-top: 10px;">
+                    <input type="url" id="new_image" name="new_image" [(ngModel)]="newImageUrl" placeholder="https://images.unsplash.com/..." class="input-url" />
+                    <button type="button" class="btn btn-secondary add-btn" (click)="addCarouselImage()" style="margin: 0;">+ Add URL</button>
+                  </div>
+                </div>
+                
+                <!-- Method B: Upload from Device -->
+                <div class="upload-method-box glass">
+                  <strong>💻 Option B: Upload from Device</strong>
+                  <div class="file-upload-wrapper" style="margin-top: 10px;">
+                    <label for="device_upload" class="btn btn-secondary device-upload-btn">
+                      📁 Choose Image File(s)
+                    </label>
+                    <input type="file" id="device_upload" (change)="onFileSelected($event)" accept="image/*" style="display: none;" multiple />
+                    <span class="selected-file-name" *ngIf="selectedFileName" style="margin-left: 10px; font-size: 0.85rem; color: var(--text-muted);">{{ selectedFileName }}</span>
+                  </div>
+                  
+                  <!-- Dynamic Uploading Progress Bars -->
+                  <div class="upload-progress-list" *ngIf="uploadProgresses.length > 0">
+                    <div class="progress-bar-container" *ngFor="let item of uploadProgresses">
+                      <div class="progress-bar-header">
+                        <span class="progress-file-name">📄 {{ item.name }}</span>
+                        <span class="progress-percent">{{ item.progress }}%</span>
+                      </div>
+                      <div class="progress-track">
+                        <div class="progress-fill" [style.width.%]="item.progress"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-footer" style="margin-top: 40px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 25px; display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary" [disabled]="!settingsForm.form.valid">Save Carousel Settings</button>
+          </div>
+        </form>
       </div>
     </div>
   </main>

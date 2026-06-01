@@ -8,7 +8,7 @@
 <div class="container content-section">
   <div class="events-list">
     <!-- Dynamic Events -->
-    <div class="event-card glass" *ngFor="let event of events">
+    <div class="event-card glass" *ngFor="let event of events" (click)="openEventModal(event)" style="cursor: pointer;">
       <div class="event-date">
         <span class="day">{{ event.event_date ? (event.event_date | date:'dd') : '--' }}</span>
         <span class="month">{{ event.event_date ? (event.event_date | date:'MMM' | uppercase) : 'EVENT' }}</span>
@@ -29,7 +29,58 @@
     <!-- Empty State -->
     <div class="no-events-client glass" *ngIf="events.length === 0">
       <div class="empty-icon">📅</div>
-      <h3>{{ t('no_events') }}</h3>
+      <h3>{{ t('no_completed_events') }}</h3>
+    </div>
+  </div>
+
+  <!-- Event Details Modal Dialog -->
+  <div class="modal-backdrop" *ngIf="selectedEvent" (click)="closeEventModal()">
+    <div class="modal-card glass" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-date-badge-wrapper">
+          <div class="modal-date-badge">
+            <span class="modal-day">{{ selectedEvent.event_date ? (selectedEvent.event_date | date:'dd') : '--' }}</span>
+            <span class="modal-month">{{ selectedEvent.event_date ? (selectedEvent.event_date | date:'MMM' | uppercase) : 'EVENT' }}</span>
+          </div>
+          <span class="modal-badge-title">{{ t('modal_details_title') }}</span>
+        </div>
+        <button type="button" class="modal-close-btn" (click)="closeEventModal()">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <h2>
+          {{ currentLang === 'gu' ? selectedEvent.title_gu : currentLang === 'hi' ? selectedEvent.title_hi : selectedEvent.title_en }}
+        </h2>
+        
+        <div class="modal-meta-grid">
+          <div class="modal-meta-item">
+            <span class="modal-meta-icon">📍</span>
+            <div class="modal-meta-text">
+              <strong>{{ t('modal_location') }}</strong>
+              <p>{{ currentLang === 'gu' ? selectedEvent.location_gu : currentLang === 'hi' ? selectedEvent.location_hi : selectedEvent.location_en }}</p>
+            </div>
+          </div>
+          
+          <div class="modal-meta-item">
+            <span class="modal-meta-icon">🕒</span>
+            <div class="modal-meta-text">
+              <strong>{{ t('modal_time_date') }}</strong>
+              <p>{{ selectedEvent.event_date | date:'longDate' }}<br>{{ selectedEvent.event_time }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+        
+        <div class="modal-description">
+          <h3>{{ t('modal_description') }}</h3>
+          <p>{{ currentLang === 'gu' ? selectedEvent.description_gu : currentLang === 'hi' ? selectedEvent.description_hi : selectedEvent.description_en }}</p>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-close-modal" (click)="closeEventModal()">{{ t('modal_close') }}</button>
+      </div>
     </div>
   </div>
 </div>

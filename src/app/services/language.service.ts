@@ -21,7 +21,7 @@ export class LanguageService {
       footer_contact: 'Contact Us',
       footer_rights: 'All rights reserved.',
       // Home Page
-      hero_title: 'Welcome to Our Village',
+      hero_title: 'Welcome to Dhamatvan Village',
       hero_subtitle: 'A community built on progress, transparency, and unity.',
       hero_btn_more: 'Discover More',
       hero_btn_events: 'Upcoming Events',
@@ -35,6 +35,9 @@ export class LanguageService {
       heritage_title: 'Our Heritage',
       heritage_desc: 'Learn about the rich history and demographics of our beautiful village.',
       explore_hist: 'Explore History →',
+      upcoming_events_title: 'Upcoming Events & Announcements',
+      upcoming_events_subtitle: 'Stay updated and participate in upcoming community initiatives, celebrations, and gatherings.',
+      no_upcoming_events: 'No upcoming events scheduled at this moment. Check back soon!',
       // About Page
       about_title: 'About Our Village',
       about_subtitle: 'Discover the history, culture, and demographics that make us unique.',
@@ -47,8 +50,9 @@ export class LanguageService {
       stat_schools: 'Schools',
       stat_hospitals: 'Hospitals',
       // Events Page
-      events_header_title: 'Upcoming Events',
-      events_header_subtitle: 'Join us in celebrating community, culture, and progress.',
+      events_header_title: 'Completed Events & Highlights',
+      events_header_subtitle: 'Explore successfully completed initiatives, festivals, and community programs.',
+      no_completed_events: 'No completed events found.',
       event1_title: 'Independence Day Celebration',
       event1_time: '📍 Village Square | 🕒 8:00 AM',
       event1_desc: 'Flag hoisting ceremony followed by cultural programs by the school children and community feast.',
@@ -101,7 +105,13 @@ export class LanguageService {
       actions: 'Actions',
       no_events: 'No events found. Add your first event!',
       btn_edit: 'Edit',
-      btn_delete: 'Delete'
+      btn_delete: 'Delete',
+      // Event Details Modal
+      modal_details_title: 'Program Details',
+      modal_location: '📍 Venue & Location',
+      modal_time_date: '📅 Date & Time',
+      modal_description: '📝 Detailed Description',
+      modal_close: 'Close'
     }
   };
 

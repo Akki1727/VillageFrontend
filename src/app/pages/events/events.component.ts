@@ -12,6 +12,7 @@ import { EventService, EventModel } from '../../services/event.service';
 })
 export class EventsComponent implements OnInit {
   events: EventModel[] = [];
+  selectedEvent: EventModel | null = null;
 
   constructor(
     private langService: LanguageService,
@@ -20,8 +21,22 @@ export class EventsComponent implements OnInit {
 
   ngOnInit() {
     this.eventService.getEvents().subscribe(data => {
-      this.events = data.filter(e => e.status !== 'inactive');
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+      
+      this.events = data.filter(e => e.status !== 'inactive' && e.event_date < todayStr);
     });
+  }
+
+  openEventModal(event: EventModel) {
+    this.selectedEvent = event;
+  }
+
+  closeEventModal() {
+    this.selectedEvent = null;
   }
 
   t(key: string): string {
