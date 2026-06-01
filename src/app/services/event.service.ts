@@ -270,6 +270,16 @@ export class EventService {
   
   confirmDialog$ = this.confirmDialogSubject.asObservable();
 
+  toggleBodyScroll(disable: boolean) {
+    if (typeof document !== 'undefined') {
+      if (disable) {
+        document.body.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+      }
+    }
+  }
+
   showConfirm(options: {
     title: string;
     message: string;
@@ -278,10 +288,12 @@ export class EventService {
     onConfirm: () => void;
     onCancel?: () => void;
   }) {
+    this.toggleBodyScroll(true);
     this.confirmDialogSubject.next(options);
   }
 
   closeConfirm() {
+    this.toggleBodyScroll(false);
     const current = this.confirmDialogSubject.value;
     if (current && current.onCancel) {
       current.onCancel();
@@ -290,6 +302,7 @@ export class EventService {
   }
 
   triggerConfirm() {
+    this.toggleBodyScroll(false);
     const current = this.confirmDialogSubject.value;
     if (current) {
       current.onConfirm();

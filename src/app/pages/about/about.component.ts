@@ -74,11 +74,13 @@ export class AboutComponent implements OnInit, OnDestroy {
   openImageModal(imgUrl: string) {
     this.selectedImage = imgUrl;
     this.stopAutoScroll(); // Pause slide auto-scroll when previewing
+    this.eventService.toggleBodyScroll(true);
   }
 
   closeImageModal() {
     this.selectedImage = null;
     this.startAutoScroll(); // Resume slide auto-scroll
+    this.eventService.toggleBodyScroll(false);
   }
 
   t(key: string): string {

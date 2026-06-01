@@ -118,8 +118,8 @@ button {
   border-radius: 24px;
   width: 100%;
   max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 85vh; /* Standard bounded card height */
+  overflow: hidden; /* Lock the card container boundaries */
   display: flex;
   flex-direction: column;
   animation: scaleUpModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -204,6 +204,8 @@ button {
 
 .modal-body {
   padding: 15px 30px 30px;
+  flex-grow: 1;
+  overflow-y: auto; /* Internal scrolling within modal card body */
 }
 
 .modal-body h2 {
@@ -373,5 +375,12 @@ button {
 .btn-close-modal:hover {
   background: rgba(0, 0, 0, 0.08) !important;
   color: var(--text-main) !important;
+}
+
+/* 🚫 Background Scroll Lock when Modal is Active */
+body.modal-open {
+  overflow: hidden !important;
+  height: 100vh !important;
+  height: 100dvh !important;
 }
 

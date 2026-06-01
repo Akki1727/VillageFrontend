@@ -40,10 +40,12 @@ export class HomeComponent implements OnInit {
 
   openEventModal(event: EventModel) {
     this.selectedEvent = event;
+    this.eventService.toggleBodyScroll(true);
   }
 
   closeEventModal() {
     this.selectedEvent = null;
+    this.eventService.toggleBodyScroll(false);
   }
 
   t(key: string): string {
