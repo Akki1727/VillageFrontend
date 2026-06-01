@@ -472,6 +472,7 @@
   width: 100%;
   max-width: 480px;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height to account for mobile browser navigation bars */
   background: white;
   box-shadow: -8px 0 25px rgba(0, 0, 0, 0.15);
   z-index: 1001;
@@ -512,7 +513,9 @@
 .drawer-form {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 88px);
+  flex-grow: 1; /* Stretch to fill drawer panel exactly */
+  overflow: hidden; /* Prevent form content pushing footer out of view */
+  height: auto;
 }
 
 .drawer-body {

@@ -284,12 +284,12 @@
 
       <div class="drawer-footer">
         <button type="button" class="btn btn-secondary" (click)="closeForm()" *ngIf="!isSavingEvent">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="!eventForm.form.valid" *ngIf="!isSavingEvent">Save Program</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!eventForm.form.valid" *ngIf="!isSavingEvent">Save Event</button>
         
         <!-- Premium Saving Spinner -->
         <div class="saving-indicator" *ngIf="isSavingEvent">
           <span class="spinner-dot">⏳</span>
-          <span>Saving Program...</span>
+          <span>Saving Event...</span>
         </div>
       </div>
     </form>
