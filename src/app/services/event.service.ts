@@ -33,16 +33,49 @@ export interface CarouselSettings {
 export class EventService {
   private apiUrl = environment.apiUrl + '/events';
   
-  private isLoggedInSubject = new BehaviorSubject<boolean>(localStorage.getItem('admin_session') === 'active');
+  private isLoggedInSubject = new BehaviorSubject<boolean>(
+    typeof localStorage !== 'undefined' ? localStorage.getItem('admin_session') === 'active' : false
+  );
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
 
   setLoginState(state: boolean) {
-    if (state) {
-      localStorage.setItem('admin_session', 'active');
-    } else {
-      localStorage.removeItem('admin_session');
+    if (typeof localStorage !== 'undefined') {
+      if (state) {
+        localStorage.setItem('admin_session', 'active');
+        localStorage.setItem('admin_login_timestamp', Date.now().toString());
+      } else {
+        localStorage.removeItem('admin_session');
+        localStorage.removeItem('admin_login_timestamp');
+      }
     }
     this.isLoggedInSubject.next(state);
+  }
+
+  private checkSessionValidity(): boolean {
+    if (typeof localStorage === 'undefined') {
+      return false;
+    }
+    const session = localStorage.getItem('admin_session');
+    if (session !== 'active') {
+      return false;
+    }
+
+    const loginTimeStr = localStorage.getItem('admin_login_timestamp');
+    if (!loginTimeStr) {
+      // Set timestamp now to avoid abrupt logout for existing active session
+      localStorage.setItem('admin_login_timestamp', Date.now().toString());
+      return true;
+    }
+
+    const loginTime = parseInt(loginTimeStr, 10);
+    const currentTime = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    if (currentTime - loginTime >= twentyFourHours) {
+      this.setLoginState(false);
+      return false;
+    }
+    return true;
   }
   
   // Local storage fallback for seamless demonstration/testing if backend is offline
@@ -106,9 +139,22 @@ export class EventService {
   ];
 
   constructor(private http: HttpClient) {
-    const existing = localStorage.getItem('fallback_events');
-    if (!existing || JSON.parse(existing).length < this.fallbackEvents.length) {
-      localStorage.setItem('fallback_events', JSON.stringify(this.fallbackEvents));
+    // Initial verification of session expiration
+    const isValid = this.checkSessionValidity();
+    this.isLoggedInSubject.next(isValid);
+
+    // Periodically check session expiration every 5 seconds to handle idle/active tabs
+    if (typeof window !== 'undefined') {
+      window.setInterval(() => {
+        this.checkSessionValidity();
+      }, 5000);
+    }
+
+    if (typeof localStorage !== 'undefined') {
+      const existing = localStorage.getItem('fallback_events');
+      if (!existing || JSON.parse(existing).length < this.fallbackEvents.length) {
+        localStorage.setItem('fallback_events', JSON.stringify(this.fallbackEvents));
+      }
     }
   }
 

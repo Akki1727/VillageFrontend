@@ -102,6 +102,16 @@ export class AdminComponent implements OnInit {
           });
           continue;
         }
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          this.eventService.showConfirm({
+            title: 'File Too Large',
+            message: `The file "${file.name}" exceeds the maximum limit of 10MB. Please choose a smaller image.`,
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
+          continue;
+        }
         validFiles.push(file);
         this.uploadProgresses.push({ name: file.name, progress: 0 });
       }
@@ -182,8 +192,8 @@ export class AdminComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.settingsErrorMessage = 'Failed to save settings!';
-        setTimeout(() => this.settingsErrorMessage = '', 3000);
+        this.settingsErrorMessage = err.error?.message || 'Failed to save settings! The payload might be too large.';
+        setTimeout(() => this.settingsErrorMessage = '', 5000);
       }
     });
   }
