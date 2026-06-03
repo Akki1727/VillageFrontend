@@ -10,6 +10,12 @@ export const routes: Routes = [
   { path: 'about', component: AboutComponent },
   { path: 'events', component: EventsComponent },
   { path: 'politics', component: PoliticsComponent },
-  { path: 'admin', component: AdminComponent },
+  { path: 'admin', redirectTo: 'admin/events', pathMatch: 'full' },
+  { path: 'admin/events', component: AdminComponent },
+  { path: 'admin/staff', component: AdminComponent },
+  { path: 'admin/resolutions', component: AdminComponent },
+  { path: 'admin/settings', component: AdminComponent },
+  { path: 'admin/statistics', component: AdminComponent },
+  { path: 'admin/home-carousel', component: AdminComponent },
   { path: '**', redirectTo: '' }
 ];

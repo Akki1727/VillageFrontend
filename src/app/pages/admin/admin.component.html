@@ -41,19 +41,27 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a class="nav-item" [class.active]="activeTab === 'events'" (click)="activeTab = 'events'" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'events'" (click)="navigateToTab('events')" style="cursor: pointer;">
         <span class="nav-icon">📅</span>
         <span class="nav-text">Events Manager</span>
       </a>
-      <a class="nav-item disabled">
+      <a class="nav-item" [class.active]="activeTab === 'staff'" (click)="navigateToTab('staff')" style="cursor: pointer;">
         <span class="nav-icon">👥</span>
         <span class="nav-text">Panchayat Staff</span>
       </a>
-      <a class="nav-item disabled">
+      <a class="nav-item" [class.active]="activeTab === 'resolutions'" (click)="navigateToTab('resolutions')" style="cursor: pointer;">
         <span class="nav-icon">📜</span>
         <span class="nav-text">Resolutions</span>
       </a>
-      <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'statistics'" (click)="navigateToTab('statistics')" style="cursor: pointer;">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Village Statistics</span>
+      </a>
+      <a class="nav-item" [class.active]="activeTab === 'home-carousel'" (click)="navigateToTab('home-carousel')" style="cursor: pointer;">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-text">Home Slideshow</span>
+      </a>
+      <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="navigateToTab('settings')" style="cursor: pointer;">
         <span class="nav-icon">⚙️</span>
         <span class="nav-text">Portal Settings</span>
       </a>
@@ -79,11 +87,14 @@
     <!-- Top Bar Header -->
     <header class="admin-topbar">
       <div class="topbar-left">
-        <div class="breadcrumbs">System / {{ activeTab === 'events' ? 'Events Dashboard' : 'Portal Settings' }}</div>
-        <h2>{{ activeTab === 'events' ? 'Events & Programs' : 'About Carousel Settings' }}</h2>
+        <div class="breadcrumbs">System / {{ activeTab === 'events' ? 'Events Dashboard' : activeTab === 'staff' ? 'Panchayat Staff' : activeTab === 'resolutions' ? 'Resolutions Dashboard' : activeTab === 'statistics' ? 'Statistics Dashboard' : activeTab === 'home-carousel' ? 'Home Slideshow' : 'Portal Settings' }}</div>
+        <h2>{{ activeTab === 'events' ? 'Events & Programs' : activeTab === 'staff' ? 'Staff Members' : activeTab === 'resolutions' ? 'Panchayat Resolutions' : activeTab === 'statistics' ? 'Village Statistics' : activeTab === 'home-carousel' ? 'Home Background Images' : 'About Carousel Settings' }}</h2>
       </div>
-      <div class="topbar-right" *ngIf="activeTab === 'events'">
-        <button class="btn btn-primary" (click)="openAddForm()">+ Add New Event</button>
+      <div class="topbar-right">
+        <button class="btn btn-primary" *ngIf="activeTab === 'events'" (click)="openAddForm()">+ Add New Event</button>
+        <button class="btn btn-primary" *ngIf="activeTab === 'staff'" (click)="openAddStaffForm()">+ Add New Staff</button>
+        <button class="btn btn-primary" *ngIf="activeTab === 'resolutions'" (click)="openAddResForm()">+ Add New Resolution</button>
+        <button class="btn btn-primary" *ngIf="activeTab === 'statistics'" (click)="openAddStatsForm()">+ Add New Statistic</button>
       </div>
     </header>
 
@@ -240,6 +251,243 @@
           </div>
         </form>
       </div>
+
+      <!-- Home Carousel Settings Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'home-carousel'">
+        <div class="card-header">
+          <h3>Home Page Background Carousel Manager</h3>
+          <span class="badge-count">{{ homeCarouselSettings.images ? homeCarouselSettings.images.length : 0 }} slides active</span>
+        </div>
+        
+        <!-- Feedback messages -->
+        <div class="settings-alert success animate-fade-in" *ngIf="homeSettingsSuccessMessage">
+          ✅ {{ homeSettingsSuccessMessage }}
+        </div>
+        <div class="settings-alert error animate-fade-in" *ngIf="homeSettingsErrorMessage">
+          ⚠️ {{ homeSettingsErrorMessage }}
+        </div>
+
+        <form (ngSubmit)="saveHomeCarouselSettings()" #homeSettingsForm="ngForm" class="settings-dashboard-form">
+          <div class="settings-section">
+            <div class="form-row-settings">
+              <label for="home_interval">Auto-Scroll Duration (Seconds)</label>
+              <input type="number" id="home_interval" name="home_interval" [(ngModel)]="homeCarouselSettings.interval" required min="1" max="60" class="input-number" />
+              <small class="help-text">Set how many seconds each background image should remain active before cross-fading.</small>
+            </div>
+            
+            <div class="form-row-settings" style="margin-top: 25px;">
+              <label>Manage Active Slides & Photographs</label>
+              <div class="image-gallery-grid">
+                <div class="gallery-card glass" *ngFor="let img of homeCarouselSettings.images; let idx = index">
+                  <div class="gallery-thumb-box">
+                    <img [src]="img" alt="Slide Preview" class="gallery-thumb" />
+                    <span class="slide-badge">Slide {{ idx + 1 }}</span>
+                  </div>
+                  <div class="gallery-details">
+                    <input type="text" [value]="img" readonly class="gallery-url-field" title="Image URL" />
+                    <button type="button" class="btn-delete-thumb" (click)="deleteHomeCarouselImage(idx)">🗑️ Remove</button>
+                  </div>
+                </div>
+                
+                <div class="gallery-card empty-gallery-state" *ngIf="!homeCarouselSettings.images || homeCarouselSettings.images.length === 0">
+                  <span style="font-size: 2rem; margin-bottom: 10px;">📸</span>
+                  <p style="margin:0; font-size: 0.9rem; color: var(--text-muted);">No images added yet.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-settings add-image-block" style="margin-top: 30px;">
+              <label>Add Slide Photograph</label>
+              <div class="upload-methods-grid">
+                <!-- Method A: Paste URL -->
+                <div class="upload-method-box glass">
+                  <strong>🔗 Option A: Paste Image URL</strong>
+                  <div class="input-action-group" style="margin-top: 10px;">
+                    <input type="url" id="new_home_image" name="new_home_image" [(ngModel)]="newHomeImageUrl" placeholder="https://images.unsplash.com/..." class="input-url" />
+                    <button type="button" class="btn btn-secondary add-btn" (click)="addHomeCarouselImage()" style="margin: 0;">+ Add URL</button>
+                  </div>
+                </div>
+                
+                <!-- Method B: Upload from Device -->
+                <div class="upload-method-box glass">
+                  <strong>💻 Option B: Upload from Device</strong>
+                  <div class="file-upload-wrapper" style="margin-top: 10px;">
+                    <label for="home_device_upload" class="btn btn-secondary device-upload-btn">
+                      📁 Choose Image File(s)
+                    </label>
+                    <input type="file" id="home_device_upload" (change)="onHomeFileSelected($event)" accept="image/*" style="display: none;" multiple />
+                    <span class="selected-file-name" *ngIf="selectedHomeFileName" style="margin-left: 10px; font-size: 0.85rem; color: var(--text-muted);">{{ selectedHomeFileName }}</span>
+                  </div>
+                  
+                  <!-- Dynamic Uploading Progress Bars -->
+                  <div class="upload-progress-list" *ngIf="homeUploadProgresses.length > 0">
+                    <div class="progress-bar-container" *ngFor="let item of homeUploadProgresses">
+                      <div class="progress-bar-header">
+                        <span class="progress-file-name">📄 {{ item.name }}</span>
+                        <span class="progress-percent">{{ item.progress }}%</span>
+                      </div>
+                      <div class="progress-track">
+                        <div class="progress-fill" [style.width.%]="item.progress"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-footer" style="margin-top: 40px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 25px; display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary" [disabled]="!homeSettingsForm.form.valid">Save Home Carousel Settings</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Panchayat Staff Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'staff'">
+        <div class="card-header">
+          <h3>Panchayat Staff & Members</h3>
+          <span class="badge-count">{{ staff.length }} members listed</span>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Profile Pic</th>
+                <th>Member Name</th>
+                <th>Position / Designation</th>
+                <th>Description / Bio</th>
+                <th>Status</th>
+                <th class="actions-header">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let member of staff">
+                <td class="avatar-cell">
+                  <div class="cell-avatar-box" style="display: flex; justify-content: center; align-items: center;">
+                    <img *ngIf="member.profile_pic" [src]="member.profile_pic" alt="Profile" class="table-profile-pic" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(0,0,0,0.05);" />
+                    <span *ngIf="!member.profile_pic" class="table-fallback-avatar" style="font-size: 2.2rem; filter: grayscale(30%);">👤</span>
+                  </div>
+                </td>
+                <td class="title-cell">
+                  <strong>{{ member.name }}</strong>
+                </td>
+                <td>
+                  <span class="role-badge" style="background: rgba(0,0,0,0.05); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; white-space: nowrap;">💼 {{ member.position }}</span>
+                </td>
+                <td class="desc-cell">
+                  <p>{{ member.description }}</p>
+                </td>
+                <td class="status-cell">
+                  <button type="button" class="status-toggle-btn" [class.active]="member.status !== 'inactive'" (click)="toggleStaffStatus(member)" title="Toggle Member Status">
+                    <span class="toggle-slider"></span>
+                    <span class="status-text">{{ member.status !== 'inactive' ? 'Active' : 'Inactive' }}</span>
+                  </button>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <button class="btn-action edit" (click)="openEditStaffForm(member)" title="Edit Member">📝 Edit</button>
+                    <button class="btn-action delete" (click)="deleteStaff(member.id)" title="Delete Member">🗑️ Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="staff.length === 0">
+                <td colspan="6" class="empty-state">
+                  <div class="empty-icon">👥</div>
+                  <h3>No staff members registered</h3>
+                  <p>Click "+ Add New Staff" to add your first Panchayat member!</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Panchayat Resolutions Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'resolutions'">
+        <div class="card-header">
+          <h3>Gram Panchayat Resolutions</h3>
+          <span class="badge-count">{{ resolutions.length }} resolutions listed</span>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 250px;">Resolution Title</th>
+                <th>Resolution Description / Details</th>
+                <th class="actions-header" style="width: 200px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let res of resolutions">
+                <td class="title-cell">
+                  <strong>📜 {{ res.title }}</strong>
+                </td>
+                <td class="desc-cell">
+                  <p>{{ res.description }}</p>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <button class="btn-action edit" (click)="openEditResForm(res)" title="Edit Resolution">📝 Edit</button>
+                    <button class="btn-action delete" (click)="deleteResolution(res.id)" title="Delete Resolution">🗑️ Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="resolutions.length === 0">
+                <td colspan="3" class="empty-state">
+                  <div class="empty-icon">📜</div>
+                  <h3>No resolutions registered</h3>
+                  <p>Click "+ Add New Resolution" to establish your first Panchayat resolution!</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Village Statistics Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'statistics'">
+        <div class="card-header">
+          <h3>Village Demographics & Statistics</h3>
+          <span class="badge-count">{{ statistics.length }} metrics listed</span>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Metric Title</th>
+                <th>Numeric Value</th>
+                <th class="actions-header" style="width: 200px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let stat of statistics">
+                <td class="title-cell">
+                  <strong>📊 {{ stat.title }}</strong>
+                </td>
+                <td>
+                  <strong style="color: var(--primary-color); font-size: 1.15rem;">{{ stat.value }}</strong>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <button class="btn-action edit" (click)="openEditStatsForm(stat)" title="Edit Statistic">📝 Edit</button>
+                    <button class="btn-action delete" (click)="deleteStatistic(stat.id)" title="Delete Statistic">🗑️ Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="statistics.length === 0">
+                <td colspan="3" class="empty-state">
+                  <div class="empty-icon">📊</div>
+                  <h3>No statistics registered</h3>
+                  <p>Click "+ Add New Statistic" to configure your first metric!</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -290,6 +538,146 @@
         <div class="saving-indicator" *ngIf="isSavingEvent">
           <span class="spinner-dot">⏳</span>
           <span>Saving Event...</span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Slide-out Side Drawer Form Panel for Staff -->
+  <div class="drawer-backdrop" *ngIf="isStaffFormOpen" (click)="closeStaffForm()"></div>
+  <div class="drawer-panel" [class.open]="isStaffFormOpen">
+    <div class="drawer-header">
+      <h2>{{ isEditingStaff ? 'Edit Staff Member' : 'Add Staff Member' }}</h2>
+      <button class="close-btn" (click)="closeStaffForm()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="saveStaff()" #staffForm="ngForm" class="drawer-form">
+      <div class="drawer-body">
+        
+        <div class="form-row">
+          <label for="staff_name">Member Name *</label>
+          <input type="text" id="staff_name" name="staff_name" [(ngModel)]="staffFormModel.name" placeholder="e.g. Ramesh Kumar" required />
+        </div>
+
+        <div class="form-row">
+          <label for="staff_position">Position / Designation *</label>
+          <input type="text" id="staff_position" name="staff_position" [(ngModel)]="staffFormModel.position" placeholder="e.g. Sarpanch" required />
+        </div>
+
+        <div class="form-row">
+          <label for="staff_description">Description / Bio *</label>
+          <textarea id="staff_description" name="staff_description" [(ngModel)]="staffFormModel.description" placeholder="Provide profile details..." required rows="5"></textarea>
+        </div>
+
+        <!-- Staff Profile Pic Upload -->
+        <div class="form-row">
+          <label>Profile Picture</label>
+          <div class="image-upload-preview-box" style="display: flex; gap: 15px; align-items: center; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px; border: 1px dashed rgba(0,0,0,0.1);">
+            <div class="preview-avatar" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #e2e8f0; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0;">
+              <img *ngIf="staffFormModel.profile_pic" [src]="staffFormModel.profile_pic" alt="Preview" style="width:100%; height:100%; object-fit:cover;" />
+              <span *ngIf="!staffFormModel.profile_pic" style="font-size: 1.8rem; color: #a0aec0;">👤</span>
+            </div>
+            
+            <div class="upload-options" style="flex: 1;">
+              <!-- Paste URL -->
+              <input type="url" name="staff_pic_url" [(ngModel)]="staffFormModel.profile_pic" placeholder="Or paste image URL here..." style="margin-bottom: 8px; width: 100%; padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.85rem;" />
+              
+              <!-- File Upload -->
+              <label for="staff_device_upload" class="btn btn-secondary" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer; display: inline-block; margin: 0; white-space: nowrap;">
+                📁 Upload Profile Pic
+              </label>
+              <input type="file" id="staff_device_upload" (change)="onStaffFileSelected($event)" accept="image/*" style="display: none;" />
+              
+              <!-- Upload Progress -->
+              <div *ngIf="selectedStaffFileName" style="margin-top: 5px; font-size: 0.8rem; color: var(--text-muted);">
+                Uploading: {{ selectedStaffFileName }} ({{ staffUploadProgress }}%)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeStaffForm()" *ngIf="!isSavingStaff">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!staffForm.form.valid" *ngIf="!isSavingStaff">Save Member</button>
+        
+        <!-- Saving Spinner -->
+        <div class="saving-indicator" *ngIf="isSavingStaff">
+          <span class="spinner-dot">⏳</span>
+          <span>Saving Staff Member...</span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Slide-out Side Drawer Form Panel for Resolutions -->
+  <div class="drawer-backdrop" *ngIf="isResFormOpen" (click)="closeResForm()"></div>
+  <div class="drawer-panel" [class.open]="isResFormOpen">
+    <div class="drawer-header">
+      <h2>{{ isEditingRes ? 'Edit Resolution Details' : 'Create Panchayat Resolution' }}</h2>
+      <button class="close-btn" (click)="closeResForm()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="saveResolution()" #resForm="ngForm" class="drawer-form">
+      <div class="drawer-body">
+        
+        <div class="form-row">
+          <label for="res_title">Resolution Title *</label>
+          <input type="text" id="res_title" name="res_title" [(ngModel)]="resFormModel.title" placeholder="e.g. Solar Street Lights Project:" required />
+        </div>
+
+        <div class="form-row">
+          <label for="res_description">Resolution Description *</label>
+          <textarea id="res_description" name="res_description" [(ngModel)]="resFormModel.description" placeholder="Provide full details of the resolution..." required rows="8"></textarea>
+        </div>
+
+      </div>
+
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeResForm()" *ngIf="!isSavingRes">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!resForm.form.valid" *ngIf="!isSavingRes">Save Resolution</button>
+        
+        <!-- Saving Spinner -->
+        <div class="saving-indicator" *ngIf="isSavingRes">
+          <span class="spinner-dot">⏳</span>
+          <span>Saving Resolution...</span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Slide-out Side Drawer Form Panel for Statistics -->
+  <div class="drawer-backdrop" *ngIf="isStatsFormOpen" (click)="closeStatsForm()"></div>
+  <div class="drawer-panel" [class.open]="isStatsFormOpen">
+    <div class="drawer-header">
+      <h2>{{ isEditingStats ? 'Edit Statistic Details' : 'Create Village Statistic' }}</h2>
+      <button class="close-btn" (click)="closeStatsForm()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="saveStatistic()" #statsForm="ngForm" class="drawer-form">
+      <div class="drawer-body">
+        
+        <div class="form-row">
+          <label for="stat_title">Statistic Title *</label>
+          <input type="text" id="stat_title" name="stat_title" [(ngModel)]="statsFormModel.title" placeholder="e.g. Population" required />
+        </div>
+
+        <div class="form-row">
+          <label for="stat_value">Statistic Value (Number) *</label>
+          <input type="number" id="stat_value" name="stat_value" [(ngModel)]="statsFormModel.value" placeholder="e.g. 5240" required min="0" step="1" />
+        </div>
+
+      </div>
+
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeStatsForm()" *ngIf="!isSavingStats">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!statsForm.form.valid" *ngIf="!isSavingStats">Save Statistic</button>
+        
+        <!-- Saving Spinner -->
+        <div class="saving-indicator" *ngIf="isSavingStats">
+          <span class="spinner-dot">⏳</span>
+          <span>Saving Statistic...</span>
         </div>
       </div>
     </form>

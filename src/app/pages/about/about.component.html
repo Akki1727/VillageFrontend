@@ -44,22 +44,10 @@
     </div>
   </div>
   
-  <div class="stats-grid">
-    <div class="stat-box">
-      <h4>{{ t('stat_pop') }}</h4>
-      <span class="stat-number">5,240</span>
-    </div>
-    <div class="stat-box">
-      <h4>{{ t('stat_est') }}</h4>
-      <span class="stat-number">1892</span>
-    </div>
-    <div class="stat-box">
-      <h4>{{ t('stat_schools') }}</h4>
-      <span class="stat-number">4</span>
-    </div>
-    <div class="stat-box">
-      <h4>{{ t('stat_hospitals') }}</h4>
-      <span class="stat-number">2</span>
+  <div class="stats-grid" *ngIf="statistics.length > 0">
+    <div class="stat-box animate-fade-in" *ngFor="let stat of statistics">
+      <h4>{{ stat.title | uppercase }}</h4>
+      <span class="stat-number">{{ formatStatValue(stat.value, stat.title) }}</span>
     </div>
   </div>
 

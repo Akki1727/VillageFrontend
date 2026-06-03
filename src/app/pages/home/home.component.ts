@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LanguageService } from '../../services/language.service';
-import { EventService, EventModel } from '../../services/event.service';
+import { EventService, EventModel, ResolutionModel, CarouselSettings } from '../../services/event.service';
 
 @Component({
   selector: 'app-home',
@@ -11,9 +11,13 @@ import { EventService, EventModel } from '../../services/event.service';
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   upcomingEvents: EventModel[] = [];
+  resolutions: ResolutionModel[] = [];
   selectedEvent: EventModel | null = null;
+  carouselSettings: CarouselSettings = { images: [], interval: 5 };
+  currentIndex = 0;
+  private intervalId: any;
 
   constructor(
     private langService: LanguageService,
@@ -36,6 +40,50 @@ export class HomeComponent implements OnInit {
         console.error('Failed to fetch events on home page:', err);
       }
     });
+
+    this.eventService.getResolutions().subscribe({
+      next: (res) => {
+        this.resolutions = res;
+      },
+      error: (err) => {
+        console.error('Failed to fetch resolutions on home page:', err);
+      }
+    });
+
+    this.eventService.getHomeCarouselSettings().subscribe({
+      next: (settings) => {
+        this.carouselSettings = settings;
+        this.startAutoScroll();
+      },
+      error: (err) => {
+        console.error('Failed to load home background settings:', err);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.stopAutoScroll();
+  }
+
+  startAutoScroll() {
+    this.stopAutoScroll();
+    if (this.carouselSettings.images && this.carouselSettings.images.length > 1) {
+      this.intervalId = setInterval(() => {
+        this.nextSlide();
+      }, this.carouselSettings.interval * 1000);
+    }
+  }
+
+  stopAutoScroll() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+  }
+
+  nextSlide() {
+    if (this.carouselSettings.images && this.carouselSettings.images.length > 0) {
+      this.currentIndex = (this.currentIndex + 1) % this.carouselSettings.images.length;
+    }
   }
 
   openEventModal(event: EventModel) {

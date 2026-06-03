@@ -27,22 +27,66 @@ export interface CarouselSettings {
   interval: number; // in seconds
 }
 
+export interface StaffModel {
+  id?: number;
+  name: string;
+  position: string;
+  profile_pic?: string; // base64 or URL
+  description: string;
+  status?: string; // 'active' or 'inactive'
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ResolutionModel {
+  id?: number;
+  title: string;
+  description: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface StatisticModel {
+  id?: number;
+  title: string;
+  value: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class EventService {
   private apiUrl = environment.apiUrl + '/events';
+  private staffApiUrl = environment.apiUrl + '/staff';
+  private resolutionsApiUrl = environment.apiUrl + '/resolutions';
+  private statisticsApiUrl = environment.apiUrl + '/statistics';
+  private homeCarouselApiUrl = environment.apiUrl + '/settings/home-carousel';
   
   private isLoggedInSubject = new BehaviorSubject<boolean>(
     typeof localStorage !== 'undefined' ? localStorage.getItem('admin_session') === 'active' : false
   );
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
 
+  private safeSetItem(key: string, value: string): boolean {
+    if (typeof localStorage === 'undefined') {
+      return false;
+    }
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      console.warn(`Failed to save key "${key}" to LocalStorage (quota exceeded or storage disabled):`, e);
+      return false;
+    }
+  }
+
   setLoginState(state: boolean) {
     if (typeof localStorage !== 'undefined') {
       if (state) {
-        localStorage.setItem('admin_session', 'active');
-        localStorage.setItem('admin_login_timestamp', Date.now().toString());
+        this.safeSetItem('admin_session', 'active');
+        this.safeSetItem('admin_login_timestamp', Date.now().toString());
       } else {
         localStorage.removeItem('admin_session');
         localStorage.removeItem('admin_login_timestamp');
@@ -63,7 +107,7 @@ export class EventService {
     const loginTimeStr = localStorage.getItem('admin_login_timestamp');
     if (!loginTimeStr) {
       // Set timestamp now to avoid abrupt logout for existing active session
-      localStorage.setItem('admin_login_timestamp', Date.now().toString());
+      this.safeSetItem('admin_login_timestamp', Date.now().toString());
       return true;
     }
 
@@ -153,8 +197,39 @@ export class EventService {
     if (typeof localStorage !== 'undefined') {
       const existing = localStorage.getItem('fallback_events');
       if (!existing || JSON.parse(existing).length < this.fallbackEvents.length) {
-        localStorage.setItem('fallback_events', JSON.stringify(this.fallbackEvents));
+        this.safeSetItem('fallback_events', JSON.stringify(this.fallbackEvents));
       }
+
+      const existingStaff = localStorage.getItem('fallback_staff');
+      if (existingStaff) {
+        const parsed = JSON.parse(existingStaff);
+        const defaults = ['Ramesh Kumar', 'Sunita Devi', 'Anil Sharma'];
+        const filtered = parsed.filter((m: any) => !defaults.includes(m.name));
+        this.safeSetItem('fallback_staff', JSON.stringify(filtered));
+      } else {
+        this.safeSetItem('fallback_staff', JSON.stringify([]));
+      }
+
+      const existingRes = localStorage.getItem('fallback_resolutions');
+      if (existingRes) {
+        const parsed = JSON.parse(existingRes);
+        const defaults = ['Solar Street Lights Project:', 'Water Conservation:', 'Primary School Upgrade:'];
+        const filtered = parsed.filter((r: any) => !defaults.includes(r.title));
+        this.safeSetItem('fallback_resolutions', JSON.stringify(filtered));
+      } else {
+        this.safeSetItem('fallback_resolutions', JSON.stringify([]));
+      }
+
+      const existingStats = localStorage.getItem('fallback_statistics');
+      if (existingStats) {
+        const parsed = JSON.parse(existingStats);
+        const defaults = ['Population', 'Established', 'Schools', 'Hospitals'];
+        const filtered = parsed.filter((s: any) => !defaults.includes(s.title));
+        this.safeSetItem('fallback_statistics', JSON.stringify(filtered));
+      } else {
+        this.safeSetItem('fallback_statistics', JSON.stringify([]));
+      }
+
     }
   }
 
@@ -164,7 +239,7 @@ export class EventService {
   }
 
   private saveFallbackEvents(events: EventModel[]) {
-    localStorage.setItem('fallback_events', JSON.stringify(events));
+    this.safeSetItem('fallback_events', JSON.stringify(events));
   }
 
   private sortDesc(events: EventModel[]): EventModel[] {
@@ -269,24 +344,20 @@ export class EventService {
   }
 
   private defaultCarouselSettings: CarouselSettings = {
-    images: [
-      'https://images.unsplash.com/photo-1546482502-056e4794664d?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1508873696983-2df519f0397e?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [],
     interval: 3 // Default 3 seconds
+  };
+
+  private defaultHomeCarouselSettings: CarouselSettings = {
+    images: [],
+    interval: 5
   };
 
   getCarouselSettings(): Observable<CarouselSettings> {
     const settingsUrl = environment.apiUrl + '/settings/carousel';
     return this.http.get<CarouselSettings>(settingsUrl).pipe(
       catchError(() => {
-        console.warn('Backend API offline. Using LocalStorage fallback for carousel settings.');
-        const data = localStorage.getItem('carousel_settings');
-        if (data) {
-          return of(JSON.parse(data));
-        }
-        localStorage.setItem('carousel_settings', JSON.stringify(this.defaultCarouselSettings));
+        console.warn('Backend API offline. Using default carousel settings.');
         return of(this.defaultCarouselSettings);
       })
     );
@@ -294,12 +365,27 @@ export class EventService {
 
   saveCarouselSettings(settings: CarouselSettings): Observable<CarouselSettings> {
     const settingsUrl = environment.apiUrl + '/settings/carousel';
-    // Update browser LocalStorage immediately to keep fallback in sync
-    localStorage.setItem('carousel_settings', JSON.stringify(settings));
-    
     return this.http.post<CarouselSettings>(settingsUrl, settings).pipe(
       catchError(() => {
-        console.warn('Backend API offline. Saving settings to LocalStorage fallback only.');
+        console.warn('Backend API offline. Settings not saved.');
+        return of(settings);
+      })
+    );
+  }
+
+  getHomeCarouselSettings(): Observable<CarouselSettings> {
+    return this.http.get<CarouselSettings>(this.homeCarouselApiUrl).pipe(
+      catchError(() => {
+        console.warn('Backend API offline. Using default home carousel settings.');
+        return of(this.defaultHomeCarouselSettings);
+      })
+    );
+  }
+
+  saveHomeCarouselSettings(settings: CarouselSettings): Observable<CarouselSettings> {
+    return this.http.post<CarouselSettings>(this.homeCarouselApiUrl, settings).pipe(
+      catchError(() => {
+        console.warn('Backend API offline. Home settings not saved.');
         return of(settings);
       })
     );
@@ -354,5 +440,271 @@ export class EventService {
       current.onConfirm();
     }
     this.confirmDialogSubject.next(null);
+  }
+
+  private fallbackStaff: StaffModel[] = [];
+
+  private getFallbackStaff(): StaffModel[] {
+    const data = localStorage.getItem('fallback_staff');
+    return data ? JSON.parse(data) : this.fallbackStaff;
+  }
+
+  private saveFallbackStaff(staff: StaffModel[]) {
+    this.safeSetItem('fallback_staff', JSON.stringify(staff));
+  }
+
+  getStaff(): Observable<StaffModel[]> {
+    if (this.http && typeof this.http.get === 'function') {
+      return this.http.get<StaffModel[]>(this.staffApiUrl).pipe(
+        catchError(() => {
+          console.warn('Backend API staff offline. Using LocalStorage fallback.');
+          return of(this.getFallbackStaff());
+        })
+      );
+    }
+    return of(this.getFallbackStaff());
+  }
+
+  createStaff(member: StaffModel): Observable<StaffModel> {
+    if (this.http && typeof this.http.post === 'function') {
+      return this.http.post<StaffModel>(this.staffApiUrl, member).pipe(
+        catchError(() => {
+          console.warn('Backend API staff offline. Saving to LocalStorage fallback.');
+          const list = this.getFallbackStaff();
+          member.id = Date.now();
+          list.push(member);
+          this.saveFallbackStaff(list);
+          return of(member);
+        })
+      );
+    } else {
+      const list = this.getFallbackStaff();
+      member.id = Date.now();
+      list.push(member);
+      this.saveFallbackStaff(list);
+      return of(member);
+    }
+  }
+
+  updateStaff(member: StaffModel): Observable<StaffModel> {
+    if (this.http && typeof this.http.put === 'function' && member.id) {
+      return this.http.put<StaffModel>(`${this.staffApiUrl}/${member.id}`, member).pipe(
+        catchError(() => {
+          console.warn('Backend API staff offline. Updating in LocalStorage fallback.');
+          const list = this.getFallbackStaff();
+          const idx = list.findIndex(e => e.id === member.id);
+          if (idx !== -1) {
+            list[idx] = member;
+            this.saveFallbackStaff(list);
+          }
+          return of(member);
+        })
+      );
+    } else {
+      const list = this.getFallbackStaff();
+      const idx = list.findIndex(e => e.id === member.id);
+      if (idx !== -1) {
+        list[idx] = member;
+        this.saveFallbackStaff(list);
+      }
+      return of(member);
+    }
+  }
+
+  deleteStaff(id: number): Observable<any> {
+    if (this.http && typeof this.http.delete === 'function') {
+      return this.http.delete(`${this.staffApiUrl}/${id}`).pipe(
+        catchError(() => {
+          console.warn('Backend API staff offline. Deleting from LocalStorage fallback.');
+          let list = this.getFallbackStaff();
+          list = list.filter(e => e.id !== id);
+          this.saveFallbackStaff(list);
+          return of({ success: true });
+        })
+      );
+    } else {
+      let list = this.getFallbackStaff();
+      list = list.filter(e => e.id !== id);
+      this.saveFallbackStaff(list);
+      return of({ success: true });
+    }
+  }
+
+  // Panchayat Resolutions Offline Fallback Data & Methods
+  private fallbackResolutions: ResolutionModel[] = [];
+
+  private getFallbackResolutions(): ResolutionModel[] {
+    const data = localStorage.getItem('fallback_resolutions');
+    return data ? JSON.parse(data) : this.fallbackResolutions;
+  }
+
+  private saveFallbackResolutions(resolutions: ResolutionModel[]) {
+    this.safeSetItem('fallback_resolutions', JSON.stringify(resolutions));
+  }
+
+  getResolutions(): Observable<ResolutionModel[]> {
+    if (this.http && typeof this.http.get === 'function') {
+      return this.http.get<ResolutionModel[]>(this.resolutionsApiUrl).pipe(
+        catchError(() => {
+          console.warn('Backend API resolutions offline. Using LocalStorage fallback.');
+          return of(this.getFallbackResolutions());
+        })
+      );
+    }
+    return of(this.getFallbackResolutions());
+  }
+
+  createResolution(res: ResolutionModel): Observable<ResolutionModel> {
+    if (this.http && typeof this.http.post === 'function') {
+      return this.http.post<ResolutionModel>(this.resolutionsApiUrl, res).pipe(
+        catchError(() => {
+          console.warn('Backend API resolutions offline. Saving to LocalStorage fallback.');
+          const list = this.getFallbackResolutions();
+          res.id = Date.now();
+          list.push(res);
+          this.saveFallbackResolutions(list);
+          return of(res);
+        })
+      );
+    } else {
+      const list = this.getFallbackResolutions();
+      res.id = Date.now();
+      list.push(res);
+      this.saveFallbackResolutions(list);
+      return of(res);
+    }
+  }
+
+  updateResolution(res: ResolutionModel): Observable<ResolutionModel> {
+    if (this.http && typeof this.http.put === 'function' && res.id) {
+      return this.http.put<ResolutionModel>(`${this.resolutionsApiUrl}/${res.id}`, res).pipe(
+        catchError(() => {
+          console.warn('Backend API resolutions offline. Updating in LocalStorage fallback.');
+          const list = this.getFallbackResolutions();
+          const idx = list.findIndex(e => e.id === res.id);
+          if (idx !== -1) {
+            list[idx] = res;
+            this.saveFallbackResolutions(list);
+          }
+          return of(res);
+        })
+      );
+    } else {
+      const list = this.getFallbackResolutions();
+      const idx = list.findIndex(e => e.id === res.id);
+      if (idx !== -1) {
+        list[idx] = res;
+        this.saveFallbackResolutions(list);
+      }
+      return of(res);
+    }
+  }
+
+  deleteResolution(id: number): Observable<any> {
+    if (this.http && typeof this.http.delete === 'function') {
+      return this.http.delete(`${this.resolutionsApiUrl}/${id}`).pipe(
+        catchError(() => {
+          console.warn('Backend API resolutions offline. Deleting from LocalStorage fallback.');
+          let list = this.getFallbackResolutions();
+          list = list.filter(e => e.id !== id);
+          this.saveFallbackResolutions(list);
+          return of({ success: true });
+        })
+      );
+    } else {
+      let list = this.getFallbackResolutions();
+      list = list.filter(e => e.id !== id);
+      this.saveFallbackResolutions(list);
+      return of({ success: true });
+    }
+  }
+
+  // Panchayat Statistics Offline Fallback Data & Methods
+  private fallbackStatistics: StatisticModel[] = [];
+
+  private getFallbackStatistics(): StatisticModel[] {
+    const data = localStorage.getItem('fallback_statistics');
+    return data ? JSON.parse(data) : this.fallbackStatistics;
+  }
+
+  private saveFallbackStatistics(stats: StatisticModel[]) {
+    this.safeSetItem('fallback_statistics', JSON.stringify(stats));
+  }
+
+  getStatistics(): Observable<StatisticModel[]> {
+    if (this.http && typeof this.http.get === 'function') {
+      return this.http.get<StatisticModel[]>(this.statisticsApiUrl).pipe(
+        catchError(() => {
+          console.warn('Backend API statistics offline. Using LocalStorage fallback.');
+          return of(this.getFallbackStatistics());
+        })
+      );
+    }
+    return of(this.getFallbackStatistics());
+  }
+
+  createStatistic(stat: StatisticModel): Observable<StatisticModel> {
+    if (this.http && typeof this.http.post === 'function') {
+      return this.http.post<StatisticModel>(this.statisticsApiUrl, stat).pipe(
+        catchError(() => {
+          console.warn('Backend API statistics offline. Saving to LocalStorage fallback.');
+          const list = this.getFallbackStatistics();
+          stat.id = Date.now();
+          list.push(stat);
+          this.saveFallbackStatistics(list);
+          return of(stat);
+        })
+      );
+    } else {
+      const list = this.getFallbackStatistics();
+      stat.id = Date.now();
+      list.push(stat);
+      this.saveFallbackStatistics(list);
+      return of(stat);
+    }
+  }
+
+  updateStatistic(stat: StatisticModel): Observable<StatisticModel> {
+    if (this.http && typeof this.http.put === 'function' && stat.id) {
+      return this.http.put<StatisticModel>(`${this.statisticsApiUrl}/${stat.id}`, stat).pipe(
+        catchError(() => {
+          console.warn('Backend API statistics offline. Updating in LocalStorage fallback.');
+          const list = this.getFallbackStatistics();
+          const idx = list.findIndex(e => e.id === stat.id);
+          if (idx !== -1) {
+            list[idx] = stat;
+            this.saveFallbackStatistics(list);
+          }
+          return of(stat);
+        })
+      );
+    } else {
+      const list = this.getFallbackStatistics();
+      const idx = list.findIndex(e => e.id === stat.id);
+      if (idx !== -1) {
+        list[idx] = stat;
+        this.saveFallbackStatistics(list);
+      }
+      return of(stat);
+    }
+  }
+
+  deleteStatistic(id: number): Observable<any> {
+    if (this.http && typeof this.http.delete === 'function') {
+      return this.http.delete(`${this.statisticsApiUrl}/${id}`).pipe(
+        catchError(() => {
+          console.warn('Backend API statistics offline. Deleting from LocalStorage fallback.');
+          let list = this.getFallbackStatistics();
+          list = list.filter(e => e.id !== id);
+          this.saveFallbackStatistics(list);
+          return of({ success: true });
+        })
+      );
+    } else {
+      let list = this.getFallbackStatistics();
+      list = list.filter(e => e.id !== id);
+      this.saveFallbackStatistics(list);
+      return of({ success: true });
+    }
   }
 }

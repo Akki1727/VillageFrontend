@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../services/language.service';
-import { EventService, CarouselSettings } from '../../services/event.service';
+import { EventService, CarouselSettings, StatisticModel } from '../../services/event.service';
 
 @Component({
   selector: 'app-about',
@@ -12,6 +12,7 @@ import { EventService, CarouselSettings } from '../../services/event.service';
 })
 export class AboutComponent implements OnInit, OnDestroy {
   carouselSettings: CarouselSettings = { images: [], interval: 3 };
+  statistics: StatisticModel[] = [];
   currentIndex = 0;
   selectedImage: string | null = null;
   private intervalId: any;
@@ -29,6 +30,15 @@ export class AboutComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Failed to load carousel settings:', err);
+      }
+    });
+
+    this.eventService.getStatistics().subscribe({
+      next: (data) => {
+        this.statistics = data;
+      },
+      error: (err) => {
+        console.error('Failed to load statistics on about page:', err);
       }
     });
   }
@@ -81,6 +91,14 @@ export class AboutComponent implements OnInit, OnDestroy {
     this.selectedImage = null;
     this.startAutoScroll(); // Resume slide auto-scroll
     this.eventService.toggleBodyScroll(false);
+  }
+
+  formatStatValue(value: number, title: string): string {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes('established') || lowerTitle.includes('year') || (value >= 1000 && value <= 2100)) {
+      return value.toString();
+    }
+    return new Intl.NumberFormat().format(value);
   }
 
   t(key: string): string {

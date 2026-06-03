@@ -69,33 +69,3 @@
   font-size: 0.95rem;
 }
 
-.recent-decisions h2 {
-  font-size: 2rem;
-  color: var(--primary-color);
-  margin-bottom: 10px;
-}
-
-.decisions-list {
-  background: white;
-  border-radius: var(--radius-lg);
-  padding: 30px;
-  box-shadow: var(--shadow-sm);
-}
-
-.decisions-list li {
-  padding: 20px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-.decisions-list li:last-child {
-  border-bottom: none;
-}
-
-.decisions-list li strong {
-  color: var(--text-main);
-  display: block;
-  margin-bottom: 5px;
-  font-size: 1.1rem;
-}

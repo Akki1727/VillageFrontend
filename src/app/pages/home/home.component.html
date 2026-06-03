@@ -1,6 +1,17 @@
 <div class="home-container">
   <!-- Hero Section -->
   <section class="hero">
+    <!-- Background Slideshow -->
+    <div class="hero-slideshow" *ngIf="carouselSettings.images && carouselSettings.images.length > 0">
+      <div 
+        class="hero-slide" 
+        *ngFor="let img of carouselSettings.images; let idx = index"
+        [class.active]="currentIndex === idx"
+        [style.backgroundImage]="'linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.65)), url(' + img + ')'"
+      >
+      </div>
+    </div>
+
     <div class="hero-content">
       <h1>{{ t('hero_title') }}</h1>
       <p>{{ t('hero_subtitle') }}</p>
@@ -83,6 +94,27 @@
     <div class="no-upcoming-events-card glass" *ngIf="upcomingEvents.length === 0">
       <div class="empty-icon-box">📅</div>
       <h3>{{ t('no_upcoming_events') }}</h3>
+    </div>
+  </section>
+
+  <!-- Recent Resolutions Section -->
+  <section class="recent-decisions container animate-fade-in" *ngIf="resolutions.length > 0">
+    <div class="section-title">
+      <h2>{{ t('decisions_title') }}</h2>
+      <div class="underline"></div>
+    </div>
+    
+    <div class="decisions-list-wrapper">
+      <div class="decision-card-item" *ngFor="let res of resolutions">
+        <div class="decision-card-icon">📜</div>
+        <div class="decision-card-content">
+          <h3>{{ res.title }}</h3>
+          <p>{{ res.description }}</p>
+          <div class="decision-card-date" *ngIf="res.created_at">
+            <span>📅 {{ res.created_at | date:'longDate' }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
