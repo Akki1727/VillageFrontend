@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../services/language.service';
-import { EventService, CarouselSettings, StatisticModel } from '../../services/event.service';
+import { EventService, CarouselSettings, StatisticModel, HistorySettings } from '../../services/event.service';
 
 @Component({
   selector: 'app-about',
@@ -12,6 +12,7 @@ import { EventService, CarouselSettings, StatisticModel } from '../../services/e
 })
 export class AboutComponent implements OnInit, OnDestroy {
   carouselSettings: CarouselSettings = { images: [], interval: 3 };
+  historySettings: HistorySettings = { title: '', p1: '', p2: '' };
   statistics: StatisticModel[] = [];
   currentIndex = 0;
   selectedImage: string | null = null;
@@ -23,6 +24,15 @@ export class AboutComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.eventService.getHistorySettings().subscribe({
+      next: (settings) => {
+        this.historySettings = settings;
+      },
+      error: (err) => {
+        console.error('Failed to load history settings:', err);
+      }
+    });
+
     this.eventService.getCarouselSettings().subscribe({
       next: (settings) => {
         this.carouselSettings = settings;

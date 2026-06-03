@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EventService, EventModel, CarouselSettings, StaffModel, ResolutionModel, StatisticModel } from '../../services/event.service';
+import { EventService, EventModel, CarouselSettings, StaffModel, ResolutionModel, StatisticModel, HistorySettings } from '../../services/event.service';
 import { LanguageService } from '../../services/language.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -27,10 +27,13 @@ export class AdminComponent implements OnInit {
   homeUploadProgresses: { name: string; progress: number }[] = [];
   carouselSettings: CarouselSettings = { images: [], interval: 3 };
   newImageUrl: string = '';
-  settingsSuccessMessage: string = '';
-  settingsErrorMessage: string = '';
-  selectedFileName: string = '';
+  settingsSuccessMessage = '';
+  settingsErrorMessage = '';
+  selectedFileName = '';
   uploadProgresses: { name: string; progress: number }[] = [];
+  historySettings: HistorySettings = { title: '', p1: '', p2: '' };
+  historySuccessMessage = '';
+  historyErrorMessage = '';
   
   // Auth State
   isLoggedIn = false;
@@ -85,6 +88,7 @@ export class AdminComponent implements OnInit {
         this.loadResolutions();
         this.loadStatistics();
         this.loadHomeCarouselSettings();
+        this.loadHistorySettings();
       }
     });
 
@@ -302,6 +306,36 @@ export class AdminComponent implements OnInit {
         console.error(err);
         this.settingsErrorMessage = err.error?.message || 'Failed to save settings! The payload might be too large.';
         setTimeout(() => this.settingsErrorMessage = '', 5000);
+      }
+    });
+  }
+
+  loadHistorySettings() {
+    this.eventService.getHistorySettings().subscribe(settings => {
+      this.historySettings = { ...settings };
+    });
+  }
+
+  saveHistorySettings() {
+    if (!this.historySettings.title || !this.historySettings.p1 || !this.historySettings.p2) {
+      this.eventService.showConfirm({
+        title: 'Missing Fields',
+        message: 'All history details fields are required.',
+        confirmBtnText: 'OK',
+        cancelBtnText: 'none',
+        onConfirm: () => {}
+      });
+      return;
+    }
+    this.eventService.saveHistorySettings(this.historySettings).subscribe({
+      next: () => {
+        this.historySuccessMessage = 'History section details saved successfully!';
+        setTimeout(() => this.historySuccessMessage = '', 3000);
+      },
+      error: (err) => {
+        console.error(err);
+        this.historyErrorMessage = err.error?.message || 'Failed to save history details!';
+        setTimeout(() => this.historyErrorMessage = '', 5000);
       }
     });
   }

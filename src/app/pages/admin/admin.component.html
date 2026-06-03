@@ -162,6 +162,44 @@
         </div>
       </div>
 
+      <!-- History Settings Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'settings'" style="margin-bottom: 30px;">
+        <div class="card-header">
+          <h3>Manage History Section Details</h3>
+        </div>
+        
+        <!-- Feedback messages -->
+        <div class="settings-alert success animate-fade-in" *ngIf="historySuccessMessage">
+          ✅ {{ historySuccessMessage }}
+        </div>
+        <div class="settings-alert error animate-fade-in" *ngIf="historyErrorMessage">
+          ⚠️ {{ historyErrorMessage }}
+        </div>
+
+        <form (ngSubmit)="saveHistorySettings()" #historyForm="ngForm" class="settings-dashboard-form">
+          <div class="settings-section">
+            <div class="form-row-settings">
+              <label for="history_title">History Section Title *</label>
+              <input type="text" id="history_title" name="history_title" [(ngModel)]="historySettings.title" required style="width: 100%; max-width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-family: inherit; font-size: 0.95rem; background: rgba(255,255,255,0.7);" placeholder="e.g. Our History" />
+            </div>
+
+            <div class="form-row-settings" style="margin-top: 20px;">
+              <label for="history_p1">History Paragraph 1 *</label>
+              <textarea id="history_p1" name="history_p1" [(ngModel)]="historySettings.p1" required rows="4" style="width: 100%; max-width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-family: inherit; font-size: 0.95rem; background: rgba(255,255,255,0.7);" placeholder="Enter first paragraph..."></textarea>
+            </div>
+
+            <div class="form-row-settings" style="margin-top: 20px;">
+              <label for="history_p2">History Paragraph 2 *</label>
+              <textarea id="history_p2" name="history_p2" [(ngModel)]="historySettings.p2" required rows="4" style="width: 100%; max-width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-family: inherit; font-size: 0.95rem; background: rgba(255,255,255,0.7);" placeholder="Enter second paragraph..."></textarea>
+            </div>
+          </div>
+
+          <div class="settings-footer" style="margin-top: 25px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 20px; display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary" [disabled]="!historyForm.form.valid">Save History Details</button>
+          </div>
+        </form>
+      </div>
+
       <!-- Carousel Settings Tab Content -->
       <div class="dashboard-card glass" *ngIf="activeTab === 'settings'">
         <div class="card-header">

@@ -27,6 +27,12 @@ export interface CarouselSettings {
   interval: number; // in seconds
 }
 
+export interface HistorySettings {
+  title: string;
+  p1: string;
+  p2: string;
+}
+
 export interface StaffModel {
   id?: number;
   name: string;
@@ -353,6 +359,12 @@ export class EventService {
     interval: 5
   };
 
+  private defaultHistorySettings: HistorySettings = {
+    title: 'Our History',
+    p1: 'Founded over a century ago, our village has grown from a small settlement into a thriving community. We are deeply rooted in agriculture and traditional craftsmanship.',
+    p2: 'Over the years, we have embraced modern amenities while preserving our cultural heritage. The old banyan tree in the center of the village still stands as a testament to our enduring legacy.'
+  };
+
   getCarouselSettings(): Observable<CarouselSettings> {
     const settingsUrl = environment.apiUrl + '/settings/carousel';
     return this.http.get<CarouselSettings>(settingsUrl).pipe(
@@ -386,6 +398,26 @@ export class EventService {
     return this.http.post<CarouselSettings>(this.homeCarouselApiUrl, settings).pipe(
       catchError(() => {
         console.warn('Backend API offline. Home settings not saved.');
+        return of(settings);
+      })
+    );
+  }
+
+  getHistorySettings(): Observable<HistorySettings> {
+    const settingsUrl = environment.apiUrl + '/settings/history';
+    return this.http.get<HistorySettings>(settingsUrl).pipe(
+      catchError(() => {
+        console.warn('Backend API offline. Using default history settings.');
+        return of(this.defaultHistorySettings);
+      })
+    );
+  }
+
+  saveHistorySettings(settings: HistorySettings): Observable<HistorySettings> {
+    const settingsUrl = environment.apiUrl + '/settings/history';
+    return this.http.post<HistorySettings>(settingsUrl, settings).pipe(
+      catchError(() => {
+        console.warn('Backend API offline. History settings not saved.');
         return of(settings);
       })
     );

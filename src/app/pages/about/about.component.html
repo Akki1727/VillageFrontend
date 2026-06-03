@@ -8,10 +8,10 @@
 <div class="container content-section">
   <div class="about-grid">
     <div class="about-text">
-      <h2>{{ t('hist_title') }}</h2>
-      <div class="underline-left"></div>
-      <p>{{ t('hist_p1') }}</p>
-      <p>{{ t('hist_p2') }}</p>
+      <h2 *ngIf="historySettings.title">{{ historySettings.title }}</h2>
+      <div class="underline-left" *ngIf="historySettings.title"></div>
+      <p *ngIf="historySettings.p1">{{ historySettings.p1 }}</p>
+      <p *ngIf="historySettings.p2">{{ historySettings.p2 }}</p>
     </div>
     <div class="about-image" (mouseenter)="stopAutoScroll()" (mouseleave)="startAutoScroll()">
       <div class="carousel-container" *ngIf="carouselSettings.images && carouselSettings.images.length > 0; else noImages">
