@@ -312,13 +312,23 @@ export class AdminComponent implements OnInit {
     }
     this.eventService.saveCarouselSettings(this.carouselSettings).subscribe({
       next: () => {
-        this.settingsSuccessMessage = 'Carousel settings saved successfully!';
-        setTimeout(() => this.settingsSuccessMessage = '', 3000);
+        this.eventService.showConfirm({
+          title: 'Save Successful',
+          message: 'Carousel settings saved successfully!',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
       },
       error: (err) => {
         console.error(err);
-        this.settingsErrorMessage = err.error?.message || 'Failed to save settings! The payload might be too large.';
-        setTimeout(() => this.settingsErrorMessage = '', 5000);
+        this.eventService.showConfirm({
+          title: 'Save Failed',
+          message: err.error?.message || 'Failed to save settings! The payload might be too large.',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
       }
     });
   }
@@ -342,13 +352,23 @@ export class AdminComponent implements OnInit {
     }
     this.eventService.saveHistorySettings(this.historySettings).subscribe({
       next: () => {
-        this.historySuccessMessage = 'History section details saved successfully!';
-        setTimeout(() => this.historySuccessMessage = '', 3000);
+        this.eventService.showConfirm({
+          title: 'Save Successful',
+          message: 'History section details saved successfully!',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
       },
       error: (err) => {
         console.error(err);
-        this.historyErrorMessage = err.error?.message || 'Failed to save history details!';
-        setTimeout(() => this.historyErrorMessage = '', 5000);
+        this.eventService.showConfirm({
+          title: 'Save Failed',
+          message: err.error?.message || 'Failed to save history details!',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
       }
     });
   }
@@ -470,10 +490,24 @@ export class AdminComponent implements OnInit {
           this.loadEvents();
           this.isSavingEvent = false;
           this.closeForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Event has been successfully updated.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingEvent = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to update event details.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     } else {
@@ -482,10 +516,24 @@ export class AdminComponent implements OnInit {
           this.loadEvents();
           this.isSavingEvent = false;
           this.closeForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Event has been successfully created.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingEvent = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to create event.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     }
@@ -618,10 +666,24 @@ export class AdminComponent implements OnInit {
           this.loadStaff();
           this.isSavingStaff = false;
           this.closeStaffForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Staff member details have been updated.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingStaff = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to update staff member details.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     } else {
@@ -630,10 +692,24 @@ export class AdminComponent implements OnInit {
           this.loadStaff();
           this.isSavingStaff = false;
           this.closeStaffForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Staff member has been successfully added.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingStaff = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to add staff member.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     }
@@ -703,10 +779,24 @@ export class AdminComponent implements OnInit {
           this.loadResolutions();
           this.isSavingRes = false;
           this.closeResForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Resolution details have been updated.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingRes = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to update resolution details.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     } else {
@@ -715,10 +805,24 @@ export class AdminComponent implements OnInit {
           this.loadResolutions();
           this.isSavingRes = false;
           this.closeResForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Resolution has been successfully created.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingRes = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to create resolution.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     }
@@ -780,10 +884,24 @@ export class AdminComponent implements OnInit {
           this.loadStatistics();
           this.isSavingStats = false;
           this.closeStatsForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Statistic has been successfully updated.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingStats = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to update statistic details.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     } else {
@@ -792,10 +910,24 @@ export class AdminComponent implements OnInit {
           this.loadStatistics();
           this.isSavingStats = false;
           this.closeStatsForm();
+          this.eventService.showConfirm({
+            title: 'Save Successful',
+            message: 'Statistic has been successfully created.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         },
         error: (err) => {
           console.error(err);
           this.isSavingStats = false;
+          this.eventService.showConfirm({
+            title: 'Save Failed',
+            message: err.error?.message || 'Failed to create statistic.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
         }
       });
     }
@@ -949,13 +1081,23 @@ export class AdminComponent implements OnInit {
     }
     this.eventService.saveHomeCarouselSettings(this.homeCarouselSettings).subscribe({
       next: () => {
-        this.homeSettingsSuccessMessage = 'Home carousel settings saved successfully!';
-        setTimeout(() => this.homeSettingsSuccessMessage = '', 3000);
+        this.eventService.showConfirm({
+          title: 'Save Successful',
+          message: 'Home carousel settings saved successfully!',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
       },
       error: (err) => {
         console.error(err);
-        this.homeSettingsErrorMessage = err.error?.message || 'Failed to save settings! The payload might be too large.';
-        setTimeout(() => this.homeSettingsErrorMessage = '', 5000);
+        this.eventService.showConfirm({
+          title: 'Save Failed',
+          message: err.error?.message || 'Failed to save settings! The payload might be too large.',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
       }
     });
   }
