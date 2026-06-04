@@ -77,7 +77,7 @@ export class EventService {
   private statisticsApiUrl = environment.apiUrl + '/statistics';
   private homeCarouselApiUrl = environment.apiUrl + '/settings/home-carousel';
   private videosApiUrl = environment.apiUrl + '/videos';
-  
+
   private isLoggedInSubject = new BehaviorSubject<boolean>(
     typeof localStorage !== 'undefined' ? localStorage.getItem('admin_session') === 'active' : false
   );
@@ -135,7 +135,7 @@ export class EventService {
     }
     return true;
   }
-  
+
   // Local storage fallback for seamless demonstration/testing if backend is offline
   private fallbackEvents: EventModel[] = [
     {
@@ -443,7 +443,7 @@ export class EventService {
     onConfirm: () => void;
     onCancel?: () => void;
   } | null>(null);
-  
+
   confirmDialog$ = this.confirmDialogSubject.asObservable();
 
   toggleBodyScroll(disable: boolean) {
@@ -777,14 +777,63 @@ export class EventService {
   }
 
   uploadVideoToCloudinary(file: File): Observable<HttpEvent<any>> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', environment.cloudinaryUploadPreset);
+    const chunkSize = 100 * 1024 * 1024; // 100MB chunk size
+    const totalBytes = file.size;
+    const uniqueUploadId = 'upload_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
 
-    const url = `https://api.cloudinary.com/v1_1/${environment.cloudinaryCloudName}/video/upload`;
-    return this.http.post(url, formData, {
-      reportProgress: true,
-      observe: 'events'
+    return new Observable<HttpEvent<any>>((observer) => {
+      let start = 0;
+
+      const uploadNextChunk = () => {
+        const end = Math.min(start + chunkSize, totalBytes);
+        const chunk = file.slice(start, end);
+
+        const formData = new FormData();
+        formData.append('file', chunk);
+        formData.append('upload_preset', environment.cloudinaryUploadPreset);
+
+        const headers: { [key: string]: string } = {
+          'X-Unique-Upload-Id': uniqueUploadId,
+          'Content-Range': `bytes ${start}-${end - 1}/${totalBytes}`
+        };
+
+        const url = `https://api.cloudinary.com/v1_1/${environment.cloudinaryCloudName}/video/upload`;
+
+        this.http.post(url, formData, {
+          headers: headers,
+          reportProgress: true,
+          observe: 'events'
+        }).subscribe({
+          next: (event) => {
+            if (event.type === HttpEventType.UploadProgress) {
+              if (event.total) {
+                const currentChunkLoaded = event.loaded;
+                const totalLoaded = start + currentChunkLoaded;
+                observer.next({
+                  type: HttpEventType.UploadProgress,
+                  loaded: totalLoaded,
+                  total: totalBytes
+                } as HttpEvent<any>);
+              }
+            } else if (event.type === HttpEventType.Response) {
+              start = end;
+              if (start < totalBytes) {
+                // Upload next chunk
+                uploadNextChunk();
+              } else {
+                // Completed all chunks, emit final response
+                observer.next(event);
+                observer.complete();
+              }
+            }
+          },
+          error: (err) => {
+            observer.error(err);
+          }
+        });
+      };
+
+      uploadNextChunk();
     });
   }
 
