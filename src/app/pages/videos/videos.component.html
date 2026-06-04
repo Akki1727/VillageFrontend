@@ -21,20 +21,20 @@
 
   <!-- Videos Grid -->
   <div class="videos-grid" *ngIf="!isLoading && !errorMessage && videos.length > 0">
-    <div class="video-card glass" *ngFor="let video of videos">
-      <div class="video-player-container">
+    <div class="video-card glass" *ngFor="let video of videos" (click)="openVideoModal(video)">
+      <div class="video-thumbnail-container">
         <video 
-          controls 
           preload="metadata"
           [src]="getFullUrl(video.video_url)"
-          class="video-player"
+          class="video-thumbnail"
         >
-          Your browser does not support the video tag.
         </video>
+        <div class="play-overlay">
+          <span class="play-icon">▶</span>
+        </div>
       </div>
       <div class="video-info">
         <h3>{{ video.title }}</h3>
-        <p class="video-description">{{ video.description }}</p>
         <div class="video-footer">
           <span class="upload-date">📅 {{ video.created_at | date:'mediumDate' }}</span>
         </div>
@@ -47,5 +47,30 @@
     <span class="empty-icon">🎥</span>
     <h3>No videos available</h3>
     <p>Check back later or update the media dashboard from the admin panel.</p>
+  </div>
+</div>
+
+<!-- Premium Video Playback Modal Dialog -->
+<div class="modal-backdrop" *ngIf="selectedVideo" (click)="closeVideoModal()">
+  <div class="modal-card glass video-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-container">
+        <span style="font-size: 1.5rem; margin-right: 8px;">🎥</span>
+        <h2>{{ selectedVideo.title }}</h2>
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closeVideoModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body video-modal-body">
+      <video 
+        controls 
+        autoplay
+        preload="auto"
+        [src]="getFullUrl(selectedVideo.video_url)"
+        class="modal-video-player"
+      >
+        Your browser does not support the video tag.
+      </video>
+    </div>
   </div>
 </div>

@@ -17,6 +17,8 @@ export class VideosComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
 
+  selectedVideo: VideoModel | null = null;
+
   constructor(
     private eventService: EventService,
     private langService: LanguageService
@@ -39,6 +41,16 @@ export class VideosComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  openVideoModal(video: VideoModel) {
+    this.selectedVideo = video;
+    this.eventService.toggleBodyScroll(true);
+  }
+
+  closeVideoModal() {
+    this.selectedVideo = null;
+    this.eventService.toggleBodyScroll(false);
   }
 
   getFullUrl(url: string): string {

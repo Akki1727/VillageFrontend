@@ -39,7 +39,7 @@
 /* Grid Layout */
 .videos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 30px;
 }
 
@@ -54,6 +54,7 @@
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
+  cursor: pointer;
 }
 
 .video-card:hover {
@@ -61,7 +62,7 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
-.video-player-container {
+.video-thumbnail-container {
   position: relative;
   width: 100%;
   padding-top: 56.25%; /* 16:9 Aspect Ratio */
@@ -69,7 +70,7 @@
   overflow: hidden;
 }
 
-.video-player {
+.video-thumbnail {
   position: absolute;
   top: 0;
   left: 0;
@@ -77,33 +78,67 @@
   height: 100%;
   object-fit: cover;
   border: none;
+  filter: brightness(0.9);
+  transition: transform 0.5s ease;
+}
+
+.video-card:hover .video-thumbnail {
+  transform: scale(1.05);
+  filter: brightness(0.8);
+}
+
+/* Play button overlay */
+.play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease;
+}
+
+.video-card:hover .play-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.play-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--secondary-color, #dd6b20);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  padding-left: 5px; /* Alignment fix for play triangle */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s ease, color 0.3s ease;
+}
+
+.video-card:hover .play-icon {
+  transform: scale(1.15);
+  background: var(--secondary-color, #dd6b20);
+  color: #fff;
 }
 
 .video-info {
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  gap: 10px;
 }
 
 .video-info h3 {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-dark, #2d3748);
-  margin-bottom: 12px;
+  margin: 0;
   line-height: 1.4;
-}
-
-.video-description {
-  font-size: 0.95rem;
-  color: var(--text-muted, #718096);
-  line-height: 1.6;
-  margin-bottom: 20px;
-  flex-grow: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .video-footer {
@@ -111,7 +146,7 @@
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-  padding-top: 15px;
+  padding-top: 12px;
 }
 
 .upload-date {
@@ -120,8 +155,106 @@
   font-weight: 500;
 }
 
+/* 🎥 Video Playback Modal Dialog */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.video-modal-card {
+  width: 90%;
+  max-width: 960px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  animation: modalSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.modal-title-container {
+  display: flex;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color, #0a497b);
+  margin: 0;
+}
+
+.modal-close-btn {
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  color: #4a5568;
+}
+
+.video-modal-body {
+  padding: 0;
+  background: #000;
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+}
+
+.modal-video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlide {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 @media (max-width: 480px) {
   .videos-grid {
     grid-template-columns: 1fr;
+  }
+  .modal-header {
+    padding: 15px;
+  }
+  .modal-header h2 {
+    font-size: 1.05rem;
   }
 }

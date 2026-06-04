@@ -778,10 +778,8 @@ export class EventService {
     return of(this.getFallbackVideos());
   }
 
-  uploadVideo(title: string, description: string, file: File): Observable<HttpEvent<any>> {
+  uploadVideo(file: File): Observable<HttpEvent<any>> {
     const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', description);
     formData.append('video', file);
 
     return this.http.post(this.videosApiUrl, formData, {

@@ -1017,29 +1017,6 @@ export class AdminComponent implements OnInit {
   }
 
   saveVideo() {
-    // Validate text inputs length
-    if (!this.videoFormModel.title || this.videoFormModel.title.trim().length < 3 || this.videoFormModel.title.trim().length > 100) {
-      this.eventService.showConfirm({
-        title: 'Validation Error',
-        message: 'Title must be between 3 and 100 characters.',
-        confirmBtnText: 'OK',
-        cancelBtnText: 'none',
-        onConfirm: () => {}
-      });
-      return;
-    }
-
-    if (!this.videoFormModel.description || this.videoFormModel.description.trim().length < 10 || this.videoFormModel.description.trim().length > 1000) {
-      this.eventService.showConfirm({
-        title: 'Validation Error',
-        message: 'Description must be between 10 and 1000 characters.',
-        confirmBtnText: 'OK',
-        cancelBtnText: 'none',
-        onConfirm: () => {}
-      });
-      return;
-    }
-
     if (!this.selectedVideoFile) {
       this.eventService.showConfirm({
         title: 'Validation Error',
@@ -1055,8 +1032,6 @@ export class AdminComponent implements OnInit {
     this.videoUploadProgress = 0;
 
     this.eventService.uploadVideo(
-      this.videoFormModel.title.trim(),
-      this.videoFormModel.description.trim(),
       this.selectedVideoFile
     ).subscribe({
       next: (event) => {

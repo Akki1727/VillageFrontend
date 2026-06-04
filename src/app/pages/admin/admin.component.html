@@ -544,8 +544,6 @@
             <thead>
               <tr>
                 <th style="width: 280px;">Video Preview</th>
-                <th>Title</th>
-                <th>Description</th>
                 <th>Uploaded At</th>
                 <th class="actions-header" style="width: 150px;">Actions</th>
               </tr>
@@ -557,12 +555,6 @@
                     <video preload="none" style="width: 100%; display: block;" [src]="video.video_url" controls></video>
                   </div>
                 </td>
-                <td class="title-cell">
-                  <strong>🎥 {{ video.title }}</strong>
-                </td>
-                <td class="desc-cell">
-                  <p>{{ video.description }}</p>
-                </td>
                 <td>
                   <span>📅 {{ video.created_at | date:'mediumDate' }}</span>
                 </td>
@@ -573,7 +565,7 @@
                 </td>
               </tr>
               <tr *ngIf="videos.length === 0">
-                <td colspan="5" class="empty-state">
+                <td colspan="3" class="empty-state">
                   <div class="empty-icon">🎥</div>
                   <h3>No videos uploaded</h3>
                   <p>Click "+ Add New Video" to upload your first village video!</p>
@@ -789,18 +781,6 @@
     <form (ngSubmit)="saveVideo()" #videoForm="ngForm" class="drawer-form">
       <div class="drawer-body">
         
-        <div class="form-row">
-          <label for="video_title">Video Title *</label>
-          <input type="text" id="video_title" name="video_title" [(ngModel)]="videoFormModel.title" placeholder="e.g. Annual Mela Highlights" required minlength="3" maxlength="100" />
-          <small class="help-text">Title length must be between 3 and 100 characters.</small>
-        </div>
-
-        <div class="form-row">
-          <label for="video_description">Video Description *</label>
-          <textarea id="video_description" name="video_description" [(ngModel)]="videoFormModel.description" placeholder="Provide full details about this video..." required minlength="10" maxlength="1000" rows="5"></textarea>
-          <small class="help-text">Description length must be between 10 and 1000 characters.</small>
-        </div>
-
         <!-- Video File Selector -->
         <div class="form-row">
           <label>Video File *</label>
@@ -840,7 +820,7 @@
 
       <div class="drawer-footer">
         <button type="button" class="btn btn-secondary" (click)="closeVideoForm()" *ngIf="!isSavingVideo">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="!videoForm.form.valid || !selectedVideoFile" *ngIf="!isSavingVideo">Upload & Save</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!selectedVideoFile" *ngIf="!isSavingVideo">Upload & Save</button>
         
         <!-- Uploading / Processing State -->
         <div class="saving-indicator" *ngIf="isSavingVideo">
