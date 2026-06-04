@@ -560,7 +560,10 @@
                 </td>
                 <td class="actions-cell">
                   <div class="action-buttons">
-                    <button class="btn-action delete" (click)="deleteVideo(video.id)" title="Delete Video">🗑️ Delete</button>
+                    <button class="btn-action delete" [disabled]="deletingVideoId === video.id" (click)="deleteVideo(video.id)" title="Delete Video">
+                      <span *ngIf="deletingVideoId !== video.id">🗑️ Delete</span>
+                      <span *ngIf="deletingVideoId === video.id">⏳ Deleting...</span>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -788,7 +791,7 @@
             <div style="font-size: 2.5rem;">🎞️</div>
             
             <div class="upload-options" style="flex: 1;">
-              <!-- File Input (Restricted to 1 video, max 500MB) -->
+              <!-- File Input (Restricted to 1 video, max 100MB) -->
               <label for="video_file_upload" class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.85rem; cursor: pointer; display: inline-block; margin: 0; white-space: nowrap;">
                 📁 Choose Video File (Max 100MB)
               </label>

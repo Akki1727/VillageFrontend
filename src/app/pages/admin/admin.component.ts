@@ -44,6 +44,7 @@ export class AdminComponent implements OnInit {
   selectedVideoFile: File | null = null;
   selectedVideoFileName = '';
   videoUploadProgress = 0;
+  deletingVideoId: number | null = null;
   
   // Auth State
   isLoggedIn = false;
@@ -1127,11 +1128,11 @@ export class AdminComponent implements OnInit {
     if (files && files.length > 0) {
       const file = files[0];
       
-      // Limit size to 500MB (500 * 1024 * 1024 bytes)
-      if (file.size > 500 * 1024 * 1024) {
+      // Limit size to 100MB (100 * 1024 * 1024 bytes)
+      if (file.size > 100 * 1024 * 1024) {
         this.eventService.showConfirm({
           title: 'File Too Large',
-          message: 'Video file must not exceed 500MB.',
+          message: 'Video file must not exceed 100MB. Please reduce the video size.',
           confirmBtnText: 'OK',
           cancelBtnText: 'none',
           onConfirm: () => {}
@@ -1285,8 +1286,23 @@ export class AdminComponent implements OnInit {
       message: 'Are you sure you want to delete this video?',
       confirmBtnText: 'Delete',
       onConfirm: () => {
-        this.eventService.deleteVideo(id).subscribe(() => {
-          this.loadVideos();
+        this.deletingVideoId = id;
+        this.eventService.deleteVideo(id).subscribe({
+          next: () => {
+            this.loadVideos();
+            this.deletingVideoId = null;
+          },
+          error: (err) => {
+            console.error('Error deleting video:', err);
+            this.deletingVideoId = null;
+            this.eventService.showConfirm({
+              title: 'Delete Failed',
+              message: err.error?.message || 'Failed to delete the video.',
+              confirmBtnText: 'OK',
+              cancelBtnText: 'none',
+              onConfirm: () => {}
+            });
+          }
         });
       }
     });
