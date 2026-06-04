@@ -6,6 +6,7 @@ import { LanguageService } from '../../services/language.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { HttpEventType } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-admin',
@@ -1029,40 +1030,110 @@ export class AdminComponent implements OnInit {
     this.isSavingVideo = true;
     this.videoUploadProgress = 0;
 
-    this.eventService.uploadVideo(
-      this.selectedVideoFile
-    ).subscribe({
-      next: (event) => {
-        if (event.type === HttpEventType.UploadProgress) {
-          if (event.total) {
-            this.videoUploadProgress = Math.round((event.loaded / event.total) * 100);
+    if (environment.useCloudinary) {
+      // Cloudinary Direct Upload Flow (for Production Vercel Serverless)
+      this.eventService.uploadVideoToCloudinary(
+        this.selectedVideoFile
+      ).subscribe({
+        next: (event) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            if (event.total) {
+              this.videoUploadProgress = Math.round((event.loaded / event.total) * 100);
+            }
+          } else if (event.type === HttpEventType.Response) {
+            const secureUrl = event.body?.secure_url;
+            if (!secureUrl) {
+              this.isSavingVideo = false;
+              this.videoUploadProgress = 0;
+              this.eventService.showConfirm({
+                title: 'Upload Error',
+                message: 'Failed to retrieve secure URL from Cloudinary.',
+                confirmBtnText: 'OK',
+                cancelBtnText: 'none',
+                onConfirm: () => {}
+              });
+              return;
+            }
+
+            // Save the secure URL to backend database
+            this.eventService.saveVideoUrl(secureUrl).subscribe({
+              next: () => {
+                this.loadVideos();
+                this.isSavingVideo = false;
+                this.closeVideoForm();
+                this.eventService.showConfirm({
+                  title: 'Upload Successful',
+                  message: 'Video has been successfully uploaded and saved.',
+                  confirmBtnText: 'OK',
+                  cancelBtnText: 'none',
+                  onConfirm: () => {}
+                });
+              },
+              error: (saveErr) => {
+                console.error('Database saving error:', saveErr);
+                this.isSavingVideo = false;
+                this.videoUploadProgress = 0;
+                this.eventService.showConfirm({
+                  title: 'Save Failed',
+                  message: saveErr.error?.message || 'Video uploaded, but failed to save database record.',
+                  confirmBtnText: 'OK',
+                  cancelBtnText: 'none',
+                  onConfirm: () => {}
+                });
+              }
+            });
           }
-        } else if (event.type === HttpEventType.Response) {
-          this.loadVideos();
+        },
+        error: (err) => {
+          console.error('Video upload error:', err);
           this.isSavingVideo = false;
-          this.closeVideoForm();
+          this.videoUploadProgress = 0;
           this.eventService.showConfirm({
-            title: 'Upload Successful',
-            message: 'Video has been successfully uploaded and saved.',
+            title: 'Upload Failed',
+            message: err.error?.message || 'Could not upload video. Check file format, size limits, or Cloudinary settings.',
             confirmBtnText: 'OK',
             cancelBtnText: 'none',
             onConfirm: () => {}
           });
         }
-      },
-      error: (err) => {
-        console.error('Video upload error:', err);
-        this.isSavingVideo = false;
-        this.videoUploadProgress = 0;
-        this.eventService.showConfirm({
-          title: 'Upload Failed',
-          message: err.error?.message || 'Could not upload video. Check file format or size limits.',
-          confirmBtnText: 'OK',
-          cancelBtnText: 'none',
-          onConfirm: () => {}
-        });
-      }
-    });
+      });
+    } else {
+      // Local Server Multipart Upload Flow (for Local Development to bypass Vercel limits)
+      this.eventService.uploadVideoLocal(
+        this.selectedVideoFile
+      ).subscribe({
+        next: (event) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            if (event.total) {
+              this.videoUploadProgress = Math.round((event.loaded / event.total) * 100);
+            }
+          } else if (event.type === HttpEventType.Response) {
+            this.loadVideos();
+            this.isSavingVideo = false;
+            this.closeVideoForm();
+            this.eventService.showConfirm({
+              title: 'Upload Successful',
+              message: 'Video has been successfully uploaded locally and saved.',
+              confirmBtnText: 'OK',
+              cancelBtnText: 'none',
+              onConfirm: () => {}
+            });
+          }
+        },
+        error: (err) => {
+          console.error('Local video upload error:', err);
+          this.isSavingVideo = false;
+          this.videoUploadProgress = 0;
+          this.eventService.showConfirm({
+            title: 'Upload Failed',
+            message: err.error?.message || 'Could not upload video to local server. Check size limits.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
+        }
+      });
+    }
   }
 
   deleteVideo(id: number | undefined) {

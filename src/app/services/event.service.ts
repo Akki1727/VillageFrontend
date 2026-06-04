@@ -776,7 +776,19 @@ export class EventService {
     return of(this.getFallbackVideos());
   }
 
-  uploadVideo(file: File): Observable<HttpEvent<any>> {
+  uploadVideoToCloudinary(file: File): Observable<HttpEvent<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', environment.cloudinaryUploadPreset);
+
+    const url = `https://api.cloudinary.com/v1_1/${environment.cloudinaryCloudName}/video/upload`;
+    return this.http.post(url, formData, {
+      reportProgress: true,
+      observe: 'events'
+    });
+  }
+
+  uploadVideoLocal(file: File): Observable<HttpEvent<any>> {
     const formData = new FormData();
     formData.append('video', file);
 
@@ -784,6 +796,10 @@ export class EventService {
       reportProgress: true,
       observe: 'events'
     });
+  }
+
+  saveVideoUrl(videoUrl: string): Observable<any> {
+    return this.http.post(this.videosApiUrl, { video_url: videoUrl });
   }
 
   deleteVideo(id: number): Observable<any> {
