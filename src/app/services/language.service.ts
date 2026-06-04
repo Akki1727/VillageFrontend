@@ -13,6 +13,7 @@ export class LanguageService {
       nav_about: 'About',
       nav_events: 'Events',
       nav_politics: 'Politics',
+      nav_videos: 'Videos',
       nav_admin: 'Admin',
       logout: 'Logout',
       // Footer
@@ -111,7 +112,11 @@ export class LanguageService {
       modal_location: '📍 Venue & Location',
       modal_time_date: '📅 Date & Time',
       modal_description: '📝 Detailed Description',
-      modal_close: 'Close'
+      modal_close: 'Close',
+      // Video Translations
+      admin_videos_title: 'Videos & Media Dashboard',
+      admin_videos_subtitle: 'Upload, manage, and showcase video highlights of our village.',
+      add_video: 'Upload New Video'
     }
   };
 

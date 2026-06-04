@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -60,6 +60,15 @@ export interface StatisticModel {
   updated_at?: string;
 }
 
+export interface VideoModel {
+  id?: number;
+  title: string;
+  description: string;
+  video_url: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -69,6 +78,7 @@ export class EventService {
   private resolutionsApiUrl = environment.apiUrl + '/resolutions';
   private statisticsApiUrl = environment.apiUrl + '/statistics';
   private homeCarouselApiUrl = environment.apiUrl + '/settings/home-carousel';
+  private videosApiUrl = environment.apiUrl + '/videos';
   
   private isLoggedInSubject = new BehaviorSubject<boolean>(
     typeof localStorage !== 'undefined' ? localStorage.getItem('admin_session') === 'active' : false
@@ -236,6 +246,10 @@ export class EventService {
         this.safeSetItem('fallback_statistics', JSON.stringify([]));
       }
 
+      const existingVideos = localStorage.getItem('fallback_videos');
+      if (!existingVideos) {
+        this.safeSetItem('fallback_videos', JSON.stringify([]));
+      }
     }
   }
 
@@ -736,6 +750,61 @@ export class EventService {
       let list = this.getFallbackStatistics();
       list = list.filter(e => e.id !== id);
       this.saveFallbackStatistics(list);
+      return of({ success: true });
+    }
+  }
+
+  // Videos Offline Fallback Data & Methods
+  private fallbackVideos: VideoModel[] = [];
+
+  private getFallbackVideos(): VideoModel[] {
+    const data = localStorage.getItem('fallback_videos');
+    return data ? JSON.parse(data) : this.fallbackVideos;
+  }
+
+  private saveFallbackVideos(videos: VideoModel[]) {
+    this.safeSetItem('fallback_videos', JSON.stringify(videos));
+  }
+
+  getVideos(): Observable<VideoModel[]> {
+    if (this.http && typeof this.http.get === 'function') {
+      return this.http.get<VideoModel[]>(this.videosApiUrl).pipe(
+        catchError(() => {
+          console.warn('Backend API videos offline. Using LocalStorage fallback.');
+          return of(this.getFallbackVideos());
+        })
+      );
+    }
+    return of(this.getFallbackVideos());
+  }
+
+  uploadVideo(title: string, description: string, file: File): Observable<HttpEvent<any>> {
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('video', file);
+
+    return this.http.post(this.videosApiUrl, formData, {
+      reportProgress: true,
+      observe: 'events'
+    });
+  }
+
+  deleteVideo(id: number): Observable<any> {
+    if (this.http && typeof this.http.delete === 'function') {
+      return this.http.delete(`${this.videosApiUrl}/${id}`).pipe(
+        catchError(() => {
+          console.warn('Backend API videos offline. Deleting from LocalStorage fallback.');
+          let list = this.getFallbackVideos();
+          list = list.filter(v => v.id !== id);
+          this.saveFallbackVideos(list);
+          return of({ success: true });
+        })
+      );
+    } else {
+      let list = this.getFallbackVideos();
+      list = list.filter(v => v.id !== id);
+      this.saveFallbackVideos(list);
       return of({ success: true });
     }
   }

@@ -61,6 +61,10 @@
         <span class="nav-icon">🖼️</span>
         <span class="nav-text">Home Slideshow</span>
       </a>
+      <a class="nav-item" [class.active]="activeTab === 'videos'" (click)="navigateToTab('videos')" style="cursor: pointer;">
+        <span class="nav-icon">🎥</span>
+        <span class="nav-text">Media & Videos</span>
+      </a>
       <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="navigateToTab('settings')" style="cursor: pointer;">
         <span class="nav-icon">⚙️</span>
         <span class="nav-text">Portal Settings</span>
@@ -87,14 +91,15 @@
     <!-- Top Bar Header -->
     <header class="admin-topbar">
       <div class="topbar-left">
-        <div class="breadcrumbs">System / {{ activeTab === 'events' ? 'Events Dashboard' : activeTab === 'staff' ? 'Panchayat Staff' : activeTab === 'resolutions' ? 'Resolutions Dashboard' : activeTab === 'statistics' ? 'Statistics Dashboard' : activeTab === 'home-carousel' ? 'Home Slideshow' : 'Portal Settings' }}</div>
-        <h2>{{ activeTab === 'events' ? 'Events & Programs' : activeTab === 'staff' ? 'Staff Members' : activeTab === 'resolutions' ? 'Panchayat Resolutions' : activeTab === 'statistics' ? 'Village Statistics' : activeTab === 'home-carousel' ? 'Home Background Images' : 'About Carousel Settings' }}</h2>
+        <div class="breadcrumbs">System / {{ activeTab === 'events' ? 'Events Dashboard' : activeTab === 'staff' ? 'Panchayat Staff' : activeTab === 'resolutions' ? 'Resolutions Dashboard' : activeTab === 'statistics' ? 'Statistics Dashboard' : activeTab === 'home-carousel' ? 'Home Slideshow' : activeTab === 'videos' ? 'Videos Dashboard' : 'Portal Settings' }}</div>
+        <h2>{{ activeTab === 'events' ? 'Events & Programs' : activeTab === 'staff' ? 'Staff Members' : activeTab === 'resolutions' ? 'Panchayat Resolutions' : activeTab === 'statistics' ? 'Village Statistics' : activeTab === 'home-carousel' ? 'Home Background Images' : activeTab === 'videos' ? 'Videos & Media Gallery' : 'About Carousel Settings' }}</h2>
       </div>
       <div class="topbar-right">
         <button class="btn btn-primary" *ngIf="activeTab === 'events'" (click)="openAddForm()">+ Add New Event</button>
         <button class="btn btn-primary" *ngIf="activeTab === 'staff'" (click)="openAddStaffForm()">+ Add New Staff</button>
         <button class="btn btn-primary" *ngIf="activeTab === 'resolutions'" (click)="openAddResForm()">+ Add New Resolution</button>
         <button class="btn btn-primary" *ngIf="activeTab === 'statistics'" (click)="openAddStatsForm()">+ Add New Statistic</button>
+        <button class="btn btn-primary" *ngIf="activeTab === 'videos'" (click)="openAddVideoForm()">+ Add New Video</button>
       </div>
     </header>
 
@@ -526,6 +531,58 @@
           </table>
         </div>
       </div>
+
+      <!-- Videos Tab Content -->
+      <div class="dashboard-card glass" *ngIf="activeTab === 'videos'">
+        <div class="card-header">
+          <h3>Registered Videos</h3>
+          <span class="badge-count">{{ videos.length }} videos listed</span>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 280px;">Video Preview</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Uploaded At</th>
+                <th class="actions-header" style="width: 150px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let video of videos">
+                <td>
+                  <div style="width: 240px; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <video preload="none" style="width: 100%; display: block;" [src]="video.video_url" controls></video>
+                  </div>
+                </td>
+                <td class="title-cell">
+                  <strong>🎥 {{ video.title }}</strong>
+                </td>
+                <td class="desc-cell">
+                  <p>{{ video.description }}</p>
+                </td>
+                <td>
+                  <span>📅 {{ video.created_at | date:'mediumDate' }}</span>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <button class="btn-action delete" (click)="deleteVideo(video.id)" title="Delete Video">🗑️ Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="videos.length === 0">
+                <td colspan="5" class="empty-state">
+                  <div class="empty-icon">🎥</div>
+                  <h3>No videos uploaded</h3>
+                  <p>Click "+ Add New Video" to upload your first village video!</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -716,6 +773,79 @@
         <div class="saving-indicator" *ngIf="isSavingStats">
           <span class="spinner-dot">⏳</span>
           <span>Saving Statistic...</span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Slide-out Side Drawer Form Panel for Videos -->
+  <div class="drawer-backdrop" *ngIf="isVideoFormOpen" (click)="closeVideoForm()"></div>
+  <div class="drawer-panel" [class.open]="isVideoFormOpen">
+    <div class="drawer-header">
+      <h2>Upload Village Video</h2>
+      <button class="close-btn" (click)="closeVideoForm()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="saveVideo()" #videoForm="ngForm" class="drawer-form">
+      <div class="drawer-body">
+        
+        <div class="form-row">
+          <label for="video_title">Video Title *</label>
+          <input type="text" id="video_title" name="video_title" [(ngModel)]="videoFormModel.title" placeholder="e.g. Annual Mela Highlights" required minlength="3" maxlength="100" />
+          <small class="help-text">Title length must be between 3 and 100 characters.</small>
+        </div>
+
+        <div class="form-row">
+          <label for="video_description">Video Description *</label>
+          <textarea id="video_description" name="video_description" [(ngModel)]="videoFormModel.description" placeholder="Provide full details about this video..." required minlength="10" maxlength="1000" rows="5"></textarea>
+          <small class="help-text">Description length must be between 10 and 1000 characters.</small>
+        </div>
+
+        <!-- Video File Selector -->
+        <div class="form-row">
+          <label>Video File *</label>
+          <div class="image-upload-preview-box" style="display: flex; gap: 15px; align-items: center; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; border: 1px dashed rgba(0,0,0,0.1);">
+            <div style="font-size: 2.5rem;">🎞️</div>
+            
+            <div class="upload-options" style="flex: 1;">
+              <!-- File Input (Restricted to 1 video, max 500MB) -->
+              <label for="video_file_upload" class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.85rem; cursor: pointer; display: inline-block; margin: 0; white-space: nowrap;">
+                📁 Choose Video File (Max 500MB)
+              </label>
+              <input type="file" id="video_file_upload" (change)="onVideoFileSelected($event)" accept="video/mp4,video/webm,video/ogg,video/quicktime" style="display: none;" />
+              
+              <div *ngIf="selectedVideoFileName" style="margin-top: 8px; font-size: 0.9rem; font-weight: 500; color: var(--text-dark);">
+                Selected: {{ selectedVideoFileName }}
+              </div>
+              <small class="help-text" style="display: block; margin-top: 5px;">Allowed formats: MP4, WebM, OGG, MOV</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uploading Progress Bar -->
+        <div class="form-row" *ngIf="isSavingVideo && videoUploadProgress > 0">
+          <label>Uploading Process</label>
+          <div class="progress-bar-container" style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
+            <div class="progress-bar-header" style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">
+              <span class="progress-file-name" style="color: var(--text-dark);">Uploading media file...</span>
+              <span class="progress-percent" style="color: var(--secondary-color);">{{ videoUploadProgress }}%</span>
+            </div>
+            <div class="progress-track" style="width: 100%; height: 8px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden;">
+              <div class="progress-fill" [style.width.%]="videoUploadProgress" style="height: 100%; background: linear-gradient(90deg, var(--secondary-color) 0%, #ff8a00 100%); transition: width 0.2s ease;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeVideoForm()" *ngIf="!isSavingVideo">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!videoForm.form.valid || !selectedVideoFile" *ngIf="!isSavingVideo">Upload & Save</button>
+        
+        <!-- Uploading / Processing State -->
+        <div class="saving-indicator" *ngIf="isSavingVideo">
+          <span class="spinner-dot">⏳</span>
+          <span>Uploading and processing video... Please do not close this drawer.</span>
         </div>
       </div>
     </form>

@@ -1,0 +1,51 @@
+<div class="page-header">
+  <div class="header-content">
+    <h1>Videos & Media Gallery</h1>
+    <p>Explore video highlights, event recordings, and development updates of Dhamatvan village.</p>
+  </div>
+</div>
+
+<div class="container content-section">
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading media gallery...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" *ngIf="errorMessage && !isLoading">
+    <span class="warning-icon">⚠</span>
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-primary" (click)="loadVideos()">Retry</button>
+  </div>
+
+  <!-- Videos Grid -->
+  <div class="videos-grid" *ngIf="!isLoading && !errorMessage && videos.length > 0">
+    <div class="video-card glass" *ngFor="let video of videos">
+      <div class="video-player-container">
+        <video 
+          controls 
+          preload="metadata"
+          [src]="getFullUrl(video.video_url)"
+          class="video-player"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div class="video-info">
+        <h3>{{ video.title }}</h3>
+        <p class="video-description">{{ video.description }}</p>
+        <div class="video-footer">
+          <span class="upload-date">📅 {{ video.created_at | date:'mediumDate' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && !errorMessage && videos.length === 0">
+    <span class="empty-icon">🎥</span>
+    <h3>No videos available</h3>
+    <p>Check back later or update the media dashboard from the admin panel.</p>
+  </div>
+</div>

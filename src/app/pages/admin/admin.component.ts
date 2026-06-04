@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EventService, EventModel, CarouselSettings, StaffModel, ResolutionModel, StatisticModel, HistorySettings } from '../../services/event.service';
+import { EventService, EventModel, CarouselSettings, StaffModel, ResolutionModel, StatisticModel, HistorySettings, VideoModel } from '../../services/event.service';
 import { LanguageService } from '../../services/language.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { HttpEventType } from '@angular/common/http';
 
 @Component({
   selector: 'app-admin',
@@ -18,7 +19,8 @@ export class AdminComponent implements OnInit {
   staff: StaffModel[] = [];
   resolutions: ResolutionModel[] = [];
   statistics: StatisticModel[] = [];
-  activeTab: 'events' | 'staff' | 'resolutions' | 'settings' | 'statistics' | 'home-carousel' = 'events';
+  videos: VideoModel[] = [];
+  activeTab: 'events' | 'staff' | 'resolutions' | 'settings' | 'statistics' | 'home-carousel' | 'videos' = 'events';
   homeCarouselSettings: CarouselSettings = { images: [], interval: 5 };
   newHomeImageUrl: string = '';
   homeSettingsSuccessMessage: string = '';
@@ -34,6 +36,14 @@ export class AdminComponent implements OnInit {
   historySettings: HistorySettings = { title: '', p1: '', p2: '' };
   historySuccessMessage = '';
   historyErrorMessage = '';
+  
+  // Videos Form State
+  isVideoFormOpen = false;
+  isSavingVideo = false;
+  videoFormModel = { title: '', description: '' };
+  selectedVideoFile: File | null = null;
+  selectedVideoFileName = '';
+  videoUploadProgress = 0;
   
   // Auth State
   isLoggedIn = false;
@@ -89,6 +99,7 @@ export class AdminComponent implements OnInit {
         this.loadStatistics();
         this.loadHomeCarouselSettings();
         this.loadHistorySettings();
+        this.loadVideos();
       }
     });
 
@@ -112,12 +123,14 @@ export class AdminComponent implements OnInit {
       this.activeTab = 'statistics';
     } else if (url.includes('/admin/home-carousel')) {
       this.activeTab = 'home-carousel';
+    } else if (url.includes('/admin/videos')) {
+      this.activeTab = 'videos';
     } else {
       this.activeTab = 'events';
     }
   }
 
-  navigateToTab(tab: 'events' | 'staff' | 'resolutions' | 'settings' | 'statistics' | 'home-carousel') {
+  navigateToTab(tab: 'events' | 'staff' | 'resolutions' | 'settings' | 'statistics' | 'home-carousel' | 'videos') {
     this.router.navigate(['/admin', tab]);
   }
 
@@ -943,6 +956,152 @@ export class AdminComponent implements OnInit {
         console.error(err);
         this.homeSettingsErrorMessage = err.error?.message || 'Failed to save settings! The payload might be too large.';
         setTimeout(() => this.homeSettingsErrorMessage = '', 5000);
+      }
+    });
+  }
+
+  // Videos Admin Operations
+  loadVideos() {
+    this.eventService.getVideos().subscribe(data => {
+      this.videos = data;
+    });
+  }
+
+  openAddVideoForm() {
+    this.videoFormModel = { title: '', description: '' };
+    this.selectedVideoFile = null;
+    this.selectedVideoFileName = '';
+    this.videoUploadProgress = 0;
+    this.isVideoFormOpen = true;
+    this.isSavingVideo = false;
+  }
+
+  closeVideoForm() {
+    this.isVideoFormOpen = false;
+    this.isSavingVideo = false;
+  }
+
+  onVideoFileSelected(event: any) {
+    const files: FileList = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Limit size to 500MB (500 * 1024 * 1024 bytes)
+      if (file.size > 500 * 1024 * 1024) {
+        this.eventService.showConfirm({
+          title: 'File Too Large',
+          message: 'Video file must not exceed 500MB.',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
+        return;
+      }
+
+      // Check mime type (must be video)
+      if (!file.type.startsWith('video/')) {
+        this.eventService.showConfirm({
+          title: 'Unsupported File Type',
+          message: 'Please select a valid video file (MP4, WebM, OGG, or MOV).',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
+        return;
+      }
+
+      this.selectedVideoFile = file;
+      this.selectedVideoFileName = file.name;
+      this.videoUploadProgress = 0;
+    }
+  }
+
+  saveVideo() {
+    // Validate text inputs length
+    if (!this.videoFormModel.title || this.videoFormModel.title.trim().length < 3 || this.videoFormModel.title.trim().length > 100) {
+      this.eventService.showConfirm({
+        title: 'Validation Error',
+        message: 'Title must be between 3 and 100 characters.',
+        confirmBtnText: 'OK',
+        cancelBtnText: 'none',
+        onConfirm: () => {}
+      });
+      return;
+    }
+
+    if (!this.videoFormModel.description || this.videoFormModel.description.trim().length < 10 || this.videoFormModel.description.trim().length > 1000) {
+      this.eventService.showConfirm({
+        title: 'Validation Error',
+        message: 'Description must be between 10 and 1000 characters.',
+        confirmBtnText: 'OK',
+        cancelBtnText: 'none',
+        onConfirm: () => {}
+      });
+      return;
+    }
+
+    if (!this.selectedVideoFile) {
+      this.eventService.showConfirm({
+        title: 'Validation Error',
+        message: 'Please select a video file to upload.',
+        confirmBtnText: 'OK',
+        cancelBtnText: 'none',
+        onConfirm: () => {}
+      });
+      return;
+    }
+
+    this.isSavingVideo = true;
+    this.videoUploadProgress = 0;
+
+    this.eventService.uploadVideo(
+      this.videoFormModel.title.trim(),
+      this.videoFormModel.description.trim(),
+      this.selectedVideoFile
+    ).subscribe({
+      next: (event) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          if (event.total) {
+            this.videoUploadProgress = Math.round((event.loaded / event.total) * 100);
+          }
+        } else if (event.type === HttpEventType.Response) {
+          this.loadVideos();
+          this.isSavingVideo = false;
+          this.closeVideoForm();
+          this.eventService.showConfirm({
+            title: 'Upload Successful',
+            message: 'Video has been successfully uploaded and saved.',
+            confirmBtnText: 'OK',
+            cancelBtnText: 'none',
+            onConfirm: () => {}
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Video upload error:', err);
+        this.isSavingVideo = false;
+        this.videoUploadProgress = 0;
+        this.eventService.showConfirm({
+          title: 'Upload Failed',
+          message: err.error?.message || 'Could not upload video. Check file format or size limits.',
+          confirmBtnText: 'OK',
+          cancelBtnText: 'none',
+          onConfirm: () => {}
+        });
+      }
+    });
+  }
+
+  deleteVideo(id: number | undefined) {
+    if (!id) return;
+    this.eventService.showConfirm({
+      title: 'Delete Video',
+      message: 'Are you sure you want to delete this video?',
+      confirmBtnText: 'Delete',
+      onConfirm: () => {
+        this.eventService.deleteVideo(id).subscribe(() => {
+          this.loadVideos();
+        });
       }
     });
   }

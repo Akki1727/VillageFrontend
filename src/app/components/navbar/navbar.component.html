@@ -19,6 +19,7 @@
       <li><a routerLink="/about" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_about') }}</a></li>
       <li><a routerLink="/events" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_events') }}</a></li>
       <li><a routerLink="/politics" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_politics') }}</a></li>
+      <li><a routerLink="/videos" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_videos') }}</a></li>
       <li><a routerLink="/admin" routerLinkActive="active" (click)="toggleMenu()">{{ t('nav_admin') }}</a></li>
       <li *ngIf="isLoggedIn"><a class="nav-logout-btn" (click)="logout()">🚪 {{ t('logout') }}</a></li>
     </ul>
