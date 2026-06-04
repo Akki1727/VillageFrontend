@@ -658,6 +658,17 @@
   to { opacity: 1; }
 }
 
+/* Mobile toggle structures (hidden on desktop) */
+.admin-mobile-toggle-bar {
+  display: none;
+}
+.close-mobile-menu-btn {
+  display: none;
+}
+.admin-sidebar-backdrop {
+  display: none;
+}
+
 /* 📱 Extremely Responsive Adaptations */
 @media screen and (max-width: 992px) {
   .admin-sidebar {
@@ -693,33 +704,152 @@
     height: auto;
   }
   
+  /* Mobile Admin Header Toggle Bar Styling */
+  .admin-mobile-toggle-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #09371d 0%, #051e10 100%);
+    padding: 12px 20px;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: var(--nav-height);
+    z-index: 990;
+  }
+  
+  .active-tab-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  
+  .admin-menu-toggle-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+  
+  .admin-menu-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  
+  /* Admin Sidebar Backdrop Overlay */
+  .admin-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 1040;
+    animation: fadeIn 0.25s ease-out;
+  }
+  
+  /* Close mobile menu button styling */
+  .close-mobile-menu-btn {
+    display: block;
+    background: none;
+    border: none;
+    color: #a7d9bb;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    outline: none;
+  }
+  
+  .close-mobile-menu-btn:hover {
+    color: white;
+  }
+
+  /* Admin Sidebar as Drawer Panel on Mobile */
   .admin-sidebar {
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    padding: 15px 20px;
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1050;
+    transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 8px 0 25px rgba(0,0,0,0.25);
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 25px 20px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, #09371d 0%, #051e10 100%);
+    align-items: stretch !important;
+  }
+  
+  .admin-sidebar.mobile-open {
+    left: 0;
   }
   
   .sidebar-brand {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+  }
+  
+  .brand-meta {
+    display: block !important;
   }
   
   .sidebar-nav {
-    flex-direction: row;
-    gap: 5px;
-    flex-grow: 0;
+    flex-direction: column !important;
+    gap: 8px;
+    flex-grow: 1;
+    width: 100%;
   }
   
   .nav-item {
-    padding: 8px 12px;
+    justify-content: flex-start !important;
+    padding: 12px 16px !important;
+    width: 100%;
+  }
+  
+  .nav-text {
+    display: block !important;
   }
   
   .sidebar-footer {
-    display: none; /* Hide profile in compact mode */
+    display: flex !important;
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+  }
+  
+  .admin-badge {
+    display: flex !important;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: var(--radius-md);
+  }
+  
+  .badge-info {
+    display: block !important;
+  }
+  
+  .btn-logout-sidebar span:last-child {
+    display: inline !important;
   }
   
   .admin-main {

@@ -384,6 +384,13 @@ body.modal-open {
   height: 100dvh !important;
 }
 
+/* 🚫 Background Scroll Lock when Menu/Drawer is Active */
+body.no-scroll {
+  overflow: hidden !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+
 /* Premium Glassmorphic Recent Resolutions Styles */
 .recent-decisions {
   margin-top: 60px !important;

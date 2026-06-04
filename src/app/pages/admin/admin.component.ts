@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EventService, EventModel, CarouselSettings, StaffModel, ResolutionModel, StatisticModel, HistorySettings, VideoModel } from '../../services/event.service';
@@ -15,7 +15,7 @@ import { environment } from '../../../environments/environment';
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
-export class AdminComponent implements OnInit {
+export class AdminComponent implements OnInit, OnDestroy {
   events: EventModel[] = [];
   staff: StaffModel[] = [];
   resolutions: ResolutionModel[] = [];
@@ -45,6 +45,7 @@ export class AdminComponent implements OnInit {
   selectedVideoFileName = '';
   videoUploadProgress = 0;
   deletingVideoId: number | null = null;
+  isAdminMobileMenuOpen = false;
   
   // Auth State
   isLoggedIn = false;
@@ -112,6 +113,10 @@ export class AdminComponent implements OnInit {
     this.updateActiveTabFromRoute();
   }
 
+  ngOnDestroy() {
+    document.body.classList.remove('no-scroll');
+  }
+
   updateActiveTabFromRoute() {
     const url = this.router.url;
     if (url.includes('/admin/staff')) {
@@ -133,6 +138,20 @@ export class AdminComponent implements OnInit {
 
   navigateToTab(tab: 'events' | 'staff' | 'resolutions' | 'settings' | 'statistics' | 'home-carousel' | 'videos') {
     this.router.navigate(['/admin', tab]);
+  }
+
+  toggleAdminMobileMenu() {
+    this.isAdminMobileMenuOpen = !this.isAdminMobileMenuOpen;
+    if (this.isAdminMobileMenuOpen) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+  }
+
+  closeAdminMobileMenu() {
+    this.isAdminMobileMenuOpen = false;
+    document.body.classList.remove('no-scroll');
   }
 
   loadCarouselSettings() {
@@ -391,6 +410,7 @@ export class AdminComponent implements OnInit {
     this.eventService.setLoginState(false);
     this.loginUsername = '';
     this.loginPassword = '';
+    document.body.classList.remove('no-scroll');
   }
 
   // Events CRUD Logic

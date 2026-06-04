@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { LanguageService } from '../../services/language.service';
@@ -11,7 +11,7 @@ import { EventService } from '../../services/event.service';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   isMenuOpen = false;
   isLoggedIn = false;
 
@@ -27,8 +27,17 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    document.body.classList.remove('no-scroll');
+  }
+
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
+    if (this.isMenuOpen) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
   }
 
 
@@ -36,6 +45,7 @@ export class NavbarComponent implements OnInit {
     this.eventService.setLoginState(false);
     this.router.navigate(['/']);
     this.isMenuOpen = false;
+    document.body.classList.remove('no-scroll');
   }
 
   t(key: string): string {

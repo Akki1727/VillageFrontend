@@ -30,42 +30,56 @@
 <!-- Authenticated view: Premium SaaS Admin Sidebar Layout -->
 <div *ngIf="isLoggedIn" class="admin-layout">
   
+  <!-- Mobile Admin Header Toggle Bar -->
+  <div class="admin-mobile-toggle-bar">
+    <span class="active-tab-title">
+      {{ activeTab === 'events' ? '📅 Events Manager' : activeTab === 'staff' ? '👥 Panchayat Staff' : activeTab === 'resolutions' ? '📜 Resolutions' : activeTab === 'statistics' ? '📊 Village Statistics' : activeTab === 'home-carousel' ? '🖼️ Home Slideshow' : activeTab === 'videos' ? '🎥 Media & Videos' : '⚙️ Portal Settings' }}
+    </span>
+    <button class="admin-menu-toggle-btn" (click)="toggleAdminMobileMenu()">
+      <span class="menu-toggle-icon">☰</span> Admin Menu
+    </button>
+  </div>
+
+  <!-- Admin Sidebar Backdrop -->
+  <div class="admin-sidebar-backdrop" *ngIf="isAdminMobileMenuOpen" (click)="closeAdminMobileMenu()"></div>
+
   <!-- Modern Admin Sidebar -->
-  <aside class="admin-sidebar">
+  <aside class="admin-sidebar" [class.mobile-open]="isAdminMobileMenuOpen">
     <div class="sidebar-brand">
       <span class="brand-icon">🏛️</span>
       <div class="brand-meta">
         <h3>Dhamatvan Portal</h3>
         <p>Control Console</p>
       </div>
+      <button class="close-mobile-menu-btn" (click)="closeAdminMobileMenu()">&times;</button>
     </div>
 
     <nav class="sidebar-nav">
-      <a class="nav-item" [class.active]="activeTab === 'events'" (click)="navigateToTab('events')" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'events'" (click)="navigateToTab('events'); closeAdminMobileMenu()" style="cursor: pointer;">
         <span class="nav-icon">📅</span>
         <span class="nav-text">Events Manager</span>
       </a>
-      <a class="nav-item" [class.active]="activeTab === 'staff'" (click)="navigateToTab('staff')" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'staff'" (click)="navigateToTab('staff'); closeAdminMobileMenu()" style="cursor: pointer;">
         <span class="nav-icon">👥</span>
         <span class="nav-text">Panchayat Staff</span>
       </a>
-      <a class="nav-item" [class.active]="activeTab === 'resolutions'" (click)="navigateToTab('resolutions')" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'resolutions'" (click)="navigateToTab('resolutions'); closeAdminMobileMenu()" style="cursor: pointer;">
         <span class="nav-icon">📜</span>
         <span class="nav-text">Resolutions</span>
       </a>
-      <a class="nav-item" [class.active]="activeTab === 'statistics'" (click)="navigateToTab('statistics')" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'statistics'" (click)="navigateToTab('statistics'); closeAdminMobileMenu()" style="cursor: pointer;">
         <span class="nav-icon">📊</span>
         <span class="nav-text">Village Statistics</span>
       </a>
-      <a class="nav-item" [class.active]="activeTab === 'home-carousel'" (click)="navigateToTab('home-carousel')" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'home-carousel'" (click)="navigateToTab('home-carousel'); closeAdminMobileMenu()" style="cursor: pointer;">
         <span class="nav-icon">🖼️</span>
         <span class="nav-text">Home Slideshow</span>
       </a>
-      <a class="nav-item" [class.active]="activeTab === 'videos'" (click)="navigateToTab('videos')" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'videos'" (click)="navigateToTab('videos'); closeAdminMobileMenu()" style="cursor: pointer;">
         <span class="nav-icon">🎥</span>
         <span class="nav-text">Media & Videos</span>
       </a>
-      <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="navigateToTab('settings')" style="cursor: pointer;">
+      <a class="nav-item" [class.active]="activeTab === 'settings'" (click)="navigateToTab('settings'); closeAdminMobileMenu()" style="cursor: pointer;">
         <span class="nav-icon">⚙️</span>
         <span class="nav-text">Portal Settings</span>
       </a>
