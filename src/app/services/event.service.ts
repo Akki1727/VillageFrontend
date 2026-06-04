@@ -62,8 +62,6 @@ export interface StatisticModel {
 
 export interface VideoModel {
   id?: number;
-  title: string;
-  description: string;
   video_url: string;
   created_at?: string;
   updated_at?: string;

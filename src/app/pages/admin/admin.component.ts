@@ -40,7 +40,6 @@ export class AdminComponent implements OnInit {
   // Videos Form State
   isVideoFormOpen = false;
   isSavingVideo = false;
-  videoFormModel = { title: '', description: '' };
   selectedVideoFile: File | null = null;
   selectedVideoFileName = '';
   videoUploadProgress = 0;
@@ -968,7 +967,6 @@ export class AdminComponent implements OnInit {
   }
 
   openAddVideoForm() {
-    this.videoFormModel = { title: '', description: '' };
     this.selectedVideoFile = null;
     this.selectedVideoFileName = '';
     this.videoUploadProgress = 0;
