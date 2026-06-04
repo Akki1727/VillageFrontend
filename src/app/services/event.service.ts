@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, HttpHeaders } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -777,8 +777,25 @@ export class EventService {
   }
 
   uploadVideoToCloudinary(file: File): Observable<HttpEvent<any>> {
-    const chunkSize = 100 * 1024 * 1024; // 100MB chunk size
     const totalBytes = file.size;
+    const threshold = 100 * 1024 * 1024; // 100MB threshold
+
+    if (totalBytes <= threshold) {
+      // Normal single upload for files <= 100MB
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', environment.cloudinaryUploadPreset);
+      formData.append('cloud_name', environment.cloudinaryCloudName);
+
+      const url = `https://api.cloudinary.com/v1_1/${environment.cloudinaryCloudName}/video/upload`;
+      return this.http.post(url, formData, {
+        reportProgress: true,
+        observe: 'events'
+      });
+    }
+
+    // Chunked upload for files > 100MB, using 95MB chunks
+    const chunkSize = 95 * 1024 * 1024; // 95MB chunk size
     const uniqueUploadId = 'upload_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
 
     return new Observable<HttpEvent<any>>((observer) => {
@@ -789,18 +806,19 @@ export class EventService {
         const chunk = file.slice(start, end);
 
         const formData = new FormData();
-        formData.append('file', chunk);
+        formData.append('file', chunk, file.name); // Pass file.name to keep extension
         formData.append('upload_preset', environment.cloudinaryUploadPreset);
+        formData.append('cloud_name', environment.cloudinaryCloudName);
 
-        const headers: { [key: string]: string } = {
+        const httpHeaders = new HttpHeaders({
           'X-Unique-Upload-Id': uniqueUploadId,
           'Content-Range': `bytes ${start}-${end - 1}/${totalBytes}`
-        };
+        });
 
         const url = `https://api.cloudinary.com/v1_1/${environment.cloudinaryCloudName}/video/upload`;
 
         this.http.post(url, formData, {
-          headers: headers,
+          headers: httpHeaders,
           reportProgress: true,
           observe: 'events'
         }).subscribe({
