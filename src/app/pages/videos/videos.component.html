@@ -34,6 +34,9 @@
         </div>
       </div>
       <div class="video-info">
+        <!-- Video title -->
+        <h3 *ngIf="video.title">{{ video.title }}</h3>
+        <h3 *ngIf="!video.title" style="color: var(--text-muted); font-style: italic;">Village Video</h3>
         <div class="video-footer">
           <span class="upload-date">📅 {{ video.created_at | date:'mediumDate' }}</span>
         </div>
@@ -55,7 +58,7 @@
     <div class="modal-header">
       <div class="modal-title-container">
         <span style="font-size: 1.5rem; margin-right: 8px;">🎥</span>
-        <h2>Video Playback</h2>
+        <h2>{{ selectedVideo.title || 'Video Playback' }}</h2>
       </div>
       <button type="button" class="modal-close-btn" (click)="closeVideoModal()">&times;</button>
     </div>

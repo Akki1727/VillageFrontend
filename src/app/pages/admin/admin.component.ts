@@ -44,6 +44,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   selectedVideoFile: File | null = null;
   selectedVideoFileName = '';
   videoUploadProgress = 0;
+  videoTitle = '';
   deletingVideoId: number | null = null;
   isAdminMobileMenuOpen = false;
   
@@ -1134,6 +1135,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.selectedVideoFile = null;
     this.selectedVideoFileName = '';
     this.videoUploadProgress = 0;
+    this.videoTitle = '';
     this.isVideoFormOpen = true;
     this.isSavingVideo = false;
   }
@@ -1219,7 +1221,7 @@ export class AdminComponent implements OnInit, OnDestroy {
             }
 
             // Save the secure URL to backend database
-            this.eventService.saveVideoUrl(secureUrl).subscribe({
+            this.eventService.saveVideoUrl(secureUrl, this.videoTitle).subscribe({
               next: () => {
                 this.loadVideos();
                 this.isSavingVideo = false;
@@ -1263,7 +1265,8 @@ export class AdminComponent implements OnInit, OnDestroy {
     } else {
       // Local Server Multipart Upload Flow (for Local Development to bypass Vercel limits)
       this.eventService.uploadVideoLocal(
-        this.selectedVideoFile
+        this.selectedVideoFile,
+        this.videoTitle
       ).subscribe({
         next: (event) => {
           if (event.type === HttpEventType.UploadProgress) {

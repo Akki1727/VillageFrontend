@@ -32,12 +32,21 @@
   
   <!-- Mobile Admin Header Toggle Bar -->
   <div class="admin-mobile-toggle-bar">
-    <span class="active-tab-title">
-      {{ activeTab === 'events' ? '📅 Events Manager' : activeTab === 'staff' ? '👥 Panchayat Staff' : activeTab === 'resolutions' ? '📜 Resolutions' : activeTab === 'statistics' ? '📊 Village Statistics' : activeTab === 'home-carousel' ? '🖼️ Home Slideshow' : activeTab === 'videos' ? '🎥 Media & Videos' : '⚙️ Portal Settings' }}
-    </span>
-    <button class="admin-menu-toggle-btn" (click)="toggleAdminMobileMenu()">
-      <span class="menu-toggle-icon">☰</span> Admin Menu
-    </button>
+    <!-- Row 1: Page heading + menu button -->
+    <div class="mobile-toggle-row">
+      <h2 class="mobile-page-title">{{ activeTab === 'events' ? 'Events &amp; Programs' : activeTab === 'staff' ? 'Staff Members' : activeTab === 'resolutions' ? 'Panchayat Resolutions' : activeTab === 'statistics' ? 'Village Statistics' : activeTab === 'home-carousel' ? 'Home Background Images' : activeTab === 'videos' ? 'Videos &amp; Media Gallery' : 'Portal Settings' }}</h2>
+      <button class="admin-menu-toggle-btn" (click)="toggleAdminMobileMenu()">
+        <span class="menu-toggle-icon">☰</span>
+      </button>
+    </div>
+    <!-- Row 2: Action button -->
+    <div class="mobile-action-row">
+      <button class="btn btn-primary btn-mobile-action" *ngIf="activeTab === 'events'" (click)="openAddForm()">+ Add New Event</button>
+      <button class="btn btn-primary btn-mobile-action" *ngIf="activeTab === 'staff'" (click)="openAddStaffForm()">+ Add New Staff</button>
+      <button class="btn btn-primary btn-mobile-action" *ngIf="activeTab === 'resolutions'" (click)="openAddResForm()">+ Add New Resolution</button>
+      <button class="btn btn-primary btn-mobile-action" *ngIf="activeTab === 'statistics'" (click)="openAddStatsForm()">+ Add New Statistic</button>
+      <button class="btn btn-primary btn-mobile-action" *ngIf="activeTab === 'videos'" (click)="openAddVideoForm()">+ Add New Video</button>
+    </div>
   </div>
 
   <!-- Admin Sidebar Backdrop -->
@@ -102,8 +111,8 @@
   <!-- Admin Main Content Area -->
   <main class="admin-main">
     
-    <!-- Top Bar Header -->
-    <header class="admin-topbar">
+    <!-- Top Bar Header (desktop only) -->
+    <header class="admin-topbar desktop-only-topbar">
       <div class="topbar-left">
         <div class="breadcrumbs">System / {{ activeTab === 'events' ? 'Events Dashboard' : activeTab === 'staff' ? 'Panchayat Staff' : activeTab === 'resolutions' ? 'Resolutions Dashboard' : activeTab === 'statistics' ? 'Statistics Dashboard' : activeTab === 'home-carousel' ? 'Home Slideshow' : activeTab === 'videos' ? 'Videos Dashboard' : 'Portal Settings' }}</div>
         <h2>{{ activeTab === 'events' ? 'Events & Programs' : activeTab === 'staff' ? 'Staff Members' : activeTab === 'resolutions' ? 'Panchayat Resolutions' : activeTab === 'statistics' ? 'Village Statistics' : activeTab === 'home-carousel' ? 'Home Background Images' : activeTab === 'videos' ? 'Videos & Media Gallery' : 'About Carousel Settings' }}</h2>
@@ -558,6 +567,7 @@
             <thead>
               <tr>
                 <th style="width: 280px;">Video Preview</th>
+                <th class="title-header">Title</th>
                 <th>Uploaded At</th>
                 <th class="actions-header" style="width: 150px;">Actions</th>
               </tr>
@@ -568,6 +578,10 @@
                   <div style="width: 240px; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     <video preload="none" style="width: 100%; display: block;" [src]="video.video_url" controls></video>
                   </div>
+                </td>
+                <td class="title-cell">
+                  <strong *ngIf="video.title">🎬 {{ video.title }}</strong>
+                  <span *ngIf="!video.title" style="color: var(--text-muted); font-style: italic; font-size: 0.85rem;">No title</span>
                 </td>
                 <td>
                   <span>📅 {{ video.created_at | date:'mediumDate' }}</span>
@@ -582,7 +596,7 @@
                 </td>
               </tr>
               <tr *ngIf="videos.length === 0">
-                <td colspan="3" class="empty-state">
+                <td colspan="4" class="empty-state">
                   <div class="empty-icon">🎥</div>
                   <h3>No videos uploaded</h3>
                   <p>Click "+ Add New Video" to upload your first village video!</p>
@@ -798,6 +812,12 @@
     <form (ngSubmit)="saveVideo()" #videoForm="ngForm" class="drawer-form">
       <div class="drawer-body">
         
+        <!-- Video Title Input -->
+        <div class="form-row">
+          <label for="video_title">Video Title</label>
+          <input type="text" id="video_title" name="video_title" [(ngModel)]="videoTitle" placeholder="e.g. Village Ganesh Utsav 2025" />
+        </div>
+
         <!-- Video File Selector -->
         <div class="form-row">
           <label>Video File *</label>

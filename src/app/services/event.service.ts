@@ -62,6 +62,7 @@ export interface StatisticModel {
 
 export interface VideoModel {
   id?: number;
+  title?: string;
   video_url: string;
   created_at?: string;
   updated_at?: string;
@@ -855,9 +856,10 @@ export class EventService {
     });
   }
 
-  uploadVideoLocal(file: File): Observable<HttpEvent<any>> {
+  uploadVideoLocal(file: File, title?: string): Observable<HttpEvent<any>> {
     const formData = new FormData();
     formData.append('video', file);
+    if (title) formData.append('title', title);
 
     return this.http.post(this.videosApiUrl, formData, {
       reportProgress: true,
@@ -865,8 +867,8 @@ export class EventService {
     });
   }
 
-  saveVideoUrl(videoUrl: string): Observable<any> {
-    return this.http.post(this.videosApiUrl, { video_url: videoUrl });
+  saveVideoUrl(videoUrl: string, title?: string): Observable<any> {
+    return this.http.post(this.videosApiUrl, { video_url: videoUrl, title: title || '' });
   }
 
   deleteVideo(id: number): Observable<any> {
