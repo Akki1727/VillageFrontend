@@ -575,7 +575,7 @@
             <tbody>
               <tr *ngFor="let video of videos">
                 <td>
-                  <div style="width: 240px; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                  <div class="video-table-preview" style="width: 240px; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     <video preload="none" style="width: 100%; display: block;" [src]="video.video_url" controls></video>
                   </div>
                 </td>

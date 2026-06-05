@@ -301,6 +301,7 @@
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
 }
 
 .admin-table {
@@ -701,8 +702,13 @@
 @media screen and (max-width: 768px) {
   .admin-layout {
     flex-direction: column;
-    height: auto;
-    overflow: visible; /* Allow sticky toggle bar to work inside scroll container */
+    /* Fill exactly the viewport below the fixed navbar */
+    height: calc(100dvh - var(--nav-height));
+    /* Make admin-layout the scroll container so sticky works at top:0 */
+    overflow-y: auto;
+    /* Use clip instead of hidden — clips visually but does NOT create a scroll container
+       that would block nested horizontal scroll in .table-responsive */
+    overflow-x: clip;
   }
   
   /* Desktop topbar hidden on mobile — replaced by toggle bar */
@@ -720,7 +726,7 @@
     color: white;
     box-shadow: 0 2px 10px rgba(0,0,0,0.15);
     position: sticky;
-    top: var(--nav-height);
+    top: 0; /* Stick to top of admin-layout scroll container, not the page */
     z-index: 990;
   }
 
@@ -886,6 +892,7 @@
   
   .admin-main {
     height: auto;
+    min-height: 100%; /* Ensure scrollable area fills admin-layout */
   }
   
   .admin-topbar {
@@ -915,6 +922,12 @@
   
   .admin-container {
     padding: 20px;
+  }
+
+  /* Shrink video preview width on mobile to reduce horizontal scroll area */
+  .video-table-preview {
+    width: 150px !important;
+    min-width: 150px;
   }
   
   .drawer-panel {
